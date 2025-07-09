@@ -1,0 +1,690 @@
+var
+mainForm:TCLForm;
+mainScrollBox:TCLVertScrollBox;
+i:Integer;
+testImage:TCLProImage;
+lytContainer:TCLLayout; //main vertical container
+
+bottomPanel:TCLProPanel;
+
+newPasswordIcon:TCLProImage;
+
+btn1, btn2, btn3, btn4 :TCLProButton;
+btn1Label, btn2Label, btn3Label, btn4Label :TCLProLabel;
+
+
+homeGreenImage:TCLProImage;
+
+helloLabel, lbl:TCLProLabel;
+
+todayDate : TclDateTime;
+todayDateLabel:TCLProLabel;
+
+weatherPanel:TCLProPanel;
+
+locationLabel,temperatureLabel, humidityLabel, precLabel, pressLabel, windLabel:TCLProLabel;
+humidityValueLabel, precValueLabel, pressValueLabel, windValueLabel:TCLProLabel;
+sunriseLabel, sunsetLabel, sunriseValueLabel, sunsetValueLabel:TCLProPanel;
+
+locationIcon, weatherIcon, sunCycleIcon:TCLProImage;
+
+
+labelCrops, labelInvest:TCLProLabel;
+
+cropsBox:TCLHorzScrollBox;
+lytContainer2:TCLLayout;   //for crops 
+lytContainer3:TCLLayout;
+
+testImg:TCLProImage;
+
+transparentPanel, userMsgPanel, aiMsgPanel:TCLProPanel;
+messageCount:Integer;
+
+
+plannerForm:TCLForm;
+
+
+lblTitle:TCLProLabel;
+
+cardID: Integer;
+introImage:TCLProImage;
+
+btnAddCrop:TCLProButton;
+cropCARD:TCLProPanel;
+
+database, password:String;
+Qry: TClSQLiteQuery;
+
+userName:String;
+
+cropName, img, date, notes, fert:String;
+
+newCropPanel:TCLProPanel;
+isCreatedNewPanel:Boolean;
+titleLbl:TCLProLabel;
+nameEdit, imgEdit, dateEdit, notesEdit, fertEdit:TCLProEdit;
+saveBtn:TCLProButton;
+cancelBtn:TCLProButton;
+
+newCropLabel:TCLProLabel;
+
+imageChooserButton, okButton:TCLProButton;
+newCropImage:TCLImage;
+fileStream:TCLFileStream;
+
+cropImageCount:Integer;
+
+//resim secme 
+
+void SelectImage1;
+{
+  Clomosy.ImageChooser(plannerForm, newCropImage);
+  
+}
+
+//secilen resmi kaydetme 
+
+ void SelectImage2;
+{
+   cropImageCount=IntToStr(Random() * 10000);
+   fileStream = TCLFileStream.Create(clPathCombine('camera'+IntToStr(cropImageCount)+'.png', Clomosy.AppFilesPath), fmCreate);
+   newCropImage.Bitmap.SaveToStream(fileStream);
+   //ShowMessage('Cektiginiz resim proje klasorune kaydedildi !');
+   imgEdit.Text=clPathCombine('camera'+IntToStr(cropImageCount)+'.png', Clomosy.AppFilesPath);
+   fileStream.Free;
+   
+}
+
+//yeni mahsul cardi ekleme
+
+void AddCropCard(cropName, img, date, notes, fert: String);
+var 
+cropCard:TCLProPanel;
+cropCardBG:TCLProImage;
+cropCardAnt:TCLProPanel;
+nameLbl, dateLbl, notesLbl, fertLbl: TCLProLabel;
+cropImg:TCLProImage;
+newCropLabel:TCLProLabel;
+
+{
+  
+  
+  Inc(cardID);
+  
+  
+  cropCard = plannerForm.AddNewProPanel(lytContainer, 'card_' + IntToStr(CardID));
+  cropCard.Width = 330;
+  cropCard.Height = 270;
+  cropCard.Align = alNone;
+  
+  if(cardID==1){
+    cropCard.Position.X=lblTitle.Position.X+35;
+    cropCard.Position.Y=lblTitle.Position.Y+80;
+  
+  }
+  
+  else{
+    cropCardAnt = plannerForm.clFindComponent('card_' + IntToStr(cardID-1));
+    cropCard.Position.X=cropCardAnt.Position.X;
+    cropCard.Position.Y=cropCardAnt.Position.Y+300;
+  }
+  
+  cropcard.Margins.Top=50;
+  //cropCard.Margins.Bottom = 20;
+  cropCard.clProSettings.IsRound = True;
+  cropCard.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  cropCard.clProSettings.BorderWidth = 1;
+  cropCard.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  cropCard.clProSettings.RoundHeight = 20;
+  cropCard.clProSettings.RoundWidth = 20;
+  cropCard.Opacity=30;
+  cropCard.clProSettings.IsTransparent=True;
+  cropCard.SetclProSettings(cropCard.clProSettings);
+  
+  lytContainer.Height = lytContainer.Height+cropCard.Height+cropCard.Margins.Bottom +70;
+
+  cropImg = plannerForm.AddNewProImage(cropCard, 'img_' + IntToStr(CardID));
+  cropImg.Align = alTop;
+  cropImg.Height = 100;
+  plannerForm.SetImage(cropImg, img);
+  cropImg.Margins.Top=20;
+
+  nameLbl = plannerForm.AddNewProLabel(cropCard, 'lbl_' + IntToStr(CardID), cropName);
+  nameLbl.Align = alTop;
+  nameLbl.clProSettings.FontSize = 18;
+  nameLbl.clProSettings.TextSettings.Font.Style = [fsBold];
+  nameLbl.clProSettings.FontHorzAlign=palCenter;
+  nameLbl.SetclProSettings(nameLbl.clProSettings);
+  
+  nameLbl.Margins.Top=10;
+
+  dateLbl = plannerForm.AddNewProLabel(cropCard, 'date_' + IntToStr(CardID), 'Ekim Tarihi: ' + date);
+  dateLbl.Align = alTop;
+  dateLbl.SetclProSettings(dateLbl.clProSettings);
+  dateLbl.Margins.Top=10;
+  dateLbl.Margins.Left=20;
+
+  fertLbl = plannerForm.AddNewProLabel(cropCard, 'fert_' + IntToStr(CardID), 'Gübre: ' + fert);
+  fertLbl.Align = alTop;
+  fertLbl.SetclProSettings(fertLbl.clProSettings);
+  fertLbl.Margins.Left=20;
+
+  notesLbl = plannerForm.AddNewProLabel(cropCard, 'notes_' + IntToStr(CardID), 'Not: '+notes);
+  notesLbl.Align = alTop;
+  notesLbl.clProSettings.WordWrap = True;
+  notesLbl.SetclProSettings(notesLbl.clProSettings);
+  notesLbl.Margins.Left=20;
+  notesLbl.Height=50;
+  
+  //btnAddCrop.Position.Y=btnAddCrop.Position.Y+330;
+}
+
+//yeni mahsul db'ye kaydetme
+
+void SaveNewCrop;
+var
+  nameEdit, imgEdit, dateEdit, notesEdit, fertEdit:TCLProEdit;
+  cropName, img, date, notes, fert:String;
+{
+  nameEdit = plannerForm.clFindComponent('nameEdit');
+  imgEdit  = plannerForm.clFindComponent('imgEdit');
+  dateEdit = plannerForm.clFindComponent('dateEdit');
+  notesEdit= plannerForm.clFindComponent('notesEdit');
+  fertEdit = plannerForm.clFindComponent('fertEdit');
+
+  cropName = nameEdit.Text;
+  
+  if((newCropImage.Bitmap <> Nil) && (newCropImage.Bitmap.Width > 0)){
+    //Inc(cropImageCount); 
+    img=clPathCombine('camera'+IntToStr(cropImageCount)+'.png', Clomosy.AppFilesPath);
+  }
+  
+  else{
+  img      = imgEdit.Text;
+  }
+  
+  
+  date     = dateEdit.Text;
+  notes    = notesEdit.Text;
+  fert     = fertEdit.Text;
+
+  if ((cropName == '') || (img == '') || (date == '')) {
+    ShowMessage('Lütfen tüm zorunlu alanları doldurunuz.');
+    exit;
+  }
+
+  try
+    Clomosy.DBSQLiteConnect(database, password);
+
+    Clomosy.DBSQLiteQuery.Sql.Text =
+      'INSERT INTO CropCards (username, crop_name, img_url, planting_date, notes, fertilizer) VALUES ' +
+      '(' + QuotedStr(userName) + ', ' +
+      QuotedStr(cropName) + ', ' +
+      QuotedStr(img) + ', ' +
+      QuotedStr(date) + ', ' +
+      QuotedStr(notes) + ', ' +
+      QuotedStr(fert) + ')';
+
+    Clomosy.DBSQLiteQuery.OpenOrExecute;
+
+    ShowMessage('Yeni mahsul başarıyla eklendi!');
+    newCropPanel.Visible=False;
+    AddCropCard(cropName, img, date, notes, fert);
+    
+   // btnAddCrop.Position.X = cropCard.Position.X +140;
+   // btnAddCrop.Position.Y = cropCard.Position.Y + 300;
+     
+     btnAddCrop.Position.Y=btnAddCrop.Position.Y+330;
+    
+
+    //plannerForm.clFindComponent('newCropPanel').clDestroy;
+
+  except
+    ShowMessage('Hata: ' + LastExceptionMessage);
+  }
+}
+
+void CloseNewCropPanel{
+  newCropPanel.Visible=False;
+}
+
+
+void OpenNewCropPanel;
+  
+{
+  if(isCreatedNewPanel==False){
+  
+  newCropImage = plannerForm.AddNewImage(plannerForm, 'newCropImage');
+  
+  //newCropImage.Height=100;
+  //newCropImage.Width=100;
+  newCropImage.Align=AlNone;
+  newCropImage.Visible=False;
+  
+  newCropPanel = plannerForm.AddNewProPanel(plannerForm, 'newCropPanel');
+  newCropPanel.Align = alNone;
+  newCropPanel.Width = 330;
+  newCropPanel.Height = 590;
+  newCropPanel.Position.X = lblTitle.Position.X + 35;
+  newCropPanel.Position.Y = lblTitle.Position.Y + 55;
+  newCropPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  newCropPanel.clProSettings.BorderColor=clAlphaColor.clHexToColor('#777777');
+  newCropPanel.clProSettings.BorderWidth=2;
+  newCropPanel.clProSettings.IsRound = True;
+  newCropPanel.clProSettings.RoundHeight = 15;
+  newCropPanel.clProSettings.RoundWidth = 15;
+  newCropPanel.SetclProSettings(newCropPanel.clProSettings);
+  
+  titleLbl = plannerForm.AddNewProLabel(newCropPanel, 'newCropTitle', 'Yeni Mahsul Ekle');
+  titleLbl.Align = alTop;
+  titleLbl.Margins.Top = 45;
+  titleLbl.Height = 30;
+  titleLbl.clProSettings.FontSize = 18;
+  titleLbl.clProSettings.FontHorzAlign = palCenter;
+  titleLbl.clProSettings.TextSettings.Font.Style = [fsBold];
+  titleLbl.SetclProSettings(titleLbl.clProSettings);
+  
+  newCropLabel = plannerForm.AddNewProLabel(newCropPanel, 'nameLbl', 'Mahsul Adı:');
+  newCropLabel.Align = alTop;
+  newCropLabel.Margins.Top = 10;
+  newCropLabel.Margins.Left = 20;
+  newCropLabel.SetclProSettings(newCropLabel.clProSettings);
+
+  nameEdit = plannerForm.AddNewProEdit(newCropPanel, 'nameEdit', 'Mahsul Adı');
+  nameEdit.Align = alTop;
+  nameEdit.Margins.Top = 20;
+  nameEdit.Margins.Left=20;
+  nameEdit.Margins.Right=20;
+  nameEdit.Height=30;
+  nameEdit.clProSettings.IsRound = True;
+  nameEdit.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#f5f5f5'); // Light gray
+  nameEdit.clProSettings.BorderColor = clAlphaColor.clHexToColor('#cccccc');
+  nameEdit.clProSettings.BorderWidth = 1;
+  nameEdit.clProSettings.RoundHeight = 12;
+  nameEdit.clProSettings.RoundWidth = 12;
+  nameEdit.SetclProSettings(nameEdit.clProSettings);
+  
+  newCropLabel = plannerForm.AddNewProLabel(newCropPanel, 'imgLbl', 'Görsel URL:');
+  newCropLabel.Align = alTop;
+  newCropLabel.Margins.Top = 10;
+  newCropLabel.Margins.Left = 20;
+  newCropLabel.SetclProSettings(newCropLabel.clProSettings);
+
+  imgEdit = plannerForm.AddNewProEdit(newCropPanel, 'imgEdit', 'Görsel URL');
+  imgEdit.Align = alTop;
+  imgEdit.Margins.Top = 20;
+  imgEdit.Margins.Left=20;
+  imgEdit.Margins.Right=20;
+  imgEdit.Height=30;
+  imgEdit.clProSettings.IsRound = True;
+  imgEdit.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#f5f5f5'); // Light gray
+  imgEdit.clProSettings.BorderColor = clAlphaColor.clHexToColor('#cccccc');
+  imgEdit.clProSettings.BorderWidth = 1;
+  imgEdit.clProSettings.RoundHeight = 12;
+  imgEdit.clProSettings.RoundWidth = 12;
+  imgEdit.SetclProSettings(imgEdit.clProSettings);
+  
+  imageChooserButton=plannerForm.AddNewProButton(newCropPanel, 'imageChooserButton', '' );
+  imageChooserButton.Align=AlNone;
+  imageChooserButton.Position.X=imgEdit.Position.X+220;
+  imageChooserButton.Position.Y=imgEdit.Position.Y;
+  imageChooserButton.Height=40;
+  imageChooserButton.Width=40;
+  imageChooserButton.clProSettings.PictureSource='https://pixsector.com/cache/d01b7e30/av7801257c459e42a24b5.png';
+  imageChooserButton.setClProSettings(imageChooserButton.clProSettings);
+  plannerForm.AddNewEvent(imageChooserButton, tbeOnClick, 'SelectImage1');
+  
+  okButton=plannerForm.AddNewProButton(newCropPanel, 'okButton', '' );
+  okButton.Align=AlNone;
+  okButton.Position.X=imgEdit.Position.X+250;
+  okButton.Position.Y=imgEdit.Position.Y;
+  okButton.Height=30;
+  okButton.Width=30;
+  okButton.clProSettings.PictureSource='https://static.thenounproject.com/png/5178358-200.png';
+  okButton.setClProSettings(okButton.clProSettings);
+  plannerForm.AddNewEvent(okButton, tbeOnClick, 'SelectImage2');
+  
+  
+  newCropLabel = plannerForm.AddNewProLabel(newCropPanel, 'dateLbl', 'Ekim Tarihi :');
+  newCropLabel.Align = alTop;
+  newCropLabel.Margins.Top = 10;
+  newCropLabel.Margins.Left = 20;
+  newCropLabel.SetclProSettings(newCropLabel.clProSettings);
+  
+
+  dateEdit = plannerForm.AddNewProEdit(newCropPanel, 'dateEdit', 'Ekim Tarihi (GG.AA.YYYY)');
+  dateEdit.Align = alTop;
+  dateEdit.Margins.Top = 20;
+  dateEdit.Margins.Left=20;
+  dateEdit.Margins.Right=20;
+  dateEdit.Height=30;
+  dateEdit.clProSettings.IsRound = True;
+  dateEdit.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#f5f5f5'); // Light gray
+  dateEdit.clProSettings.BorderColor = clAlphaColor.clHexToColor('#cccccc');
+  dateEdit.clProSettings.BorderWidth = 1;
+  dateEdit.clProSettings.RoundHeight = 12;
+  dateEdit.clProSettings.RoundWidth = 12;
+  dateEdit.SetclProSettings(dateEdit.clProSettings);
+  
+  newCropLabel = plannerForm.AddNewProLabel(newCropPanel, 'notesLbl', 'Notlar:');
+  newCropLabel.Align = alTop;
+  newCropLabel.Margins.Top = 10;
+  newCropLabel.Margins.Left = 20;
+  newCropLabel.SetclProSettings(newCropLabel.clProSettings);
+
+  notesEdit = plannerForm.AddNewProEdit(newCropPanel, 'notesEdit', 'Notlar');
+  notesEdit.Align = alTop;
+  notesEdit.Margins.Top = 20;
+  notesEdit.Margins.Left=20;
+  notesEdit.Margins.Right=20;
+  notesEdit.Height=30;
+  notesEdit.clProSettings.IsRound = True;
+  notesEdit.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#f5f5f5'); // Light gray
+  notesEdit.clProSettings.BorderColor = clAlphaColor.clHexToColor('#cccccc');
+  notesEdit.clProSettings.BorderWidth = 1;
+  notesEdit.clProSettings.RoundHeight = 12;
+  notesEdit.clProSettings.RoundWidth = 12;
+  notesEdit.SetclProSettings(notesEdit.clProSettings);
+  
+  newCropLabel = plannerForm.AddNewProLabel(newCropPanel, 'fertLbl', 'Gübre Bilgisi:');
+  newCropLabel.Align = alTop;
+  newCropLabel.Margins.Top = 10;
+  newCropLabel.Margins.Left = 20;
+  newCropLabel.SetclProSettings(newCropLabel.clProSettings);
+
+  fertEdit = plannerForm.AddNewProEdit(newCropPanel, 'fertEdit', 'Gübre Bilgisi');
+  fertEdit.Align = alTop;
+  fertEdit.Margins.Top = 20;
+  fertEdit.Margins.Left=20;
+  fertEdit.Margins.Right=20;
+  fertEdit.Height=30;
+  fertEdit.clProSettings.IsRound = True;
+  fertEdit.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#f5f5f5'); // Light gray
+  fertEdit.clProSettings.BorderColor = clAlphaColor.clHexToColor('#cccccc');
+  fertEdit.clProSettings.BorderWidth = 1;
+  fertEdit.clProSettings.RoundHeight = 12;
+  fertEdit.clProSettings.RoundWidth = 12;
+  fertEdit.SetclProSettings(fertEdit.clProSettings);
+
+  saveBtn = plannerForm.AddNewProButton(newCropPanel, 'saveBtn', 'Kaydet');
+  saveBtn.Align = alTop;
+  saveBtn.Height = 40;
+  saveBtn.Margins.Top=30;
+  saveBtn.Margins.Left=30;
+  saveBtn.Margins.Right=30;
+  saveBtn.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50');
+  saveBtn.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+  saveBtn.clProSettings.isRound=True;
+  saveBtn.clProSettings.RoundWidth=15;
+  saveBtn.clProSettings.RoundHeight=15;
+  saveBtn.clProSettings.TextSettings.Font.Style = [fsBold];
+  saveBtn.SetclProSettings(saveBtn.clProSettings);
+
+  plannerForm.AddNewEvent(saveBtn, tbeOnClick, 'SaveNewCrop');
+  
+  cancelBtn = plannerForm.AddNewProButton(newCropPanel, 'cancelBtn', 'x');
+  cancelBtn.Align = alNone;
+  cancelBtn.Position.Y=newCropPanel.Position.Y-70;
+  cancelBtn.Position.X=newCropPanel.Position.X+240;
+  cancelBtn.Width=30;
+  cancelBtn.Height = 30;
+  cancelBtn.Margins.Top = 20;
+  cancelBtn.Margins.Left = 20;
+  cancelBtn.Margins.Right = 20;
+  cancelBtn.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FF3B30'); // red
+  cancelBtn.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+  cancelBtn.clProSettings.TextSettings.Font.Style = [fsBold];
+  cancelBtn.SetclProSettings(cancelBtn.clProSettings);
+  plannerForm.AddNewEvent(cancelBtn, tbeOnClick, 'CloseNewCropPanel');
+  
+  isCreatedNewPanel=True;
+  
+  }
+  else{
+    newCropPanel.Visible=True;
+  }
+  
+}
+
+//sayfa arasi gezinme buton fonksiyonlari
+
+void Btn1Function;
+{
+  Clomosy.RunUnit('MainPage');
+  plannerForm.clHide;
+}
+void Btn2Function;
+{
+  Clomosy.RunUnit('GuidePage');
+  plannerForm.clHide;
+}
+void Btn3Function;
+{
+  //Clomosy.RunUnit('ProfilePage');
+  //plannerForm.clHide;
+}
+void Btn4Function;
+{
+  Clomosy.RunUnit('ProfilePage');
+  plannerForm.clHide;
+}
+
+
+//ana kod
+
+{
+
+  plannerForm=TCLForm.Create(Self);
+  
+  isCreatedNewPanel=False;
+  
+  
+  database=Clomosy.AppFilesPath+'ClomosyDatabase.db3';
+  password = '';
+  
+ 
+ /* try
+  Clomosy.DBSQLiteConnect(database, password);
+
+  Clomosy.DBSQLiteQuery.Sql.Text = 
+    'CREATE TABLE if not exists CropCards (' +
+    'id INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+    'username TEXT NOT NULL, ' +
+    'crop_name TEXT NOT NULL, ' +
+    'img_url TEXT NOT NULL, ' +
+    'planting_date TEXT NOT NULL, ' +
+    'notes TEXT NOT NULL, ' +
+    'fertilizer TEXT NOT NULL' +
+    ')';
+
+  Clomosy.DBSQLiteQuery.OpenOrExecute;
+
+  ShowMessage('CropCards tablosu başarıyla oluşturuldu!');
+except
+  ShowMessage('Hata: ' + LastExceptionMessage);
+}
+
+*/
+  
+
+  plannerForm.SetFormColor('#F2F2F2','',clGNone);
+  
+  userName=Clomosy.GlobalVariableString;
+  //ShowMessage(userName);
+  
+  
+  mainScrollBox = plannerForm.AddNewVertScrollBox(plannerForm,'mainScrollBox');
+  mainScrollBox.Align = alMostTop;
+  mainScrollBox.Height = plannerForm.clheight+30;
+  mainScrollBox.ShowScrollBars = True;
+  
+  
+  lytContainer=plannerForm.AddNewLayout(mainScrollBox, 'lytContainer');
+  lytContainer.Align = alMostTop;
+  lytContainer.Height = 0; // Crucial: We will increase this as we add items
+  
+  introImage=plannerForm.AddNewProImage(lytContainer, 'introImage');
+  introImage.clProSettings.PictureSource='https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/planner_page_image%20(1)%20(1).png';
+  introImage.setClProSettings(introImage.clProSettings);
+  introImage.Height=100;
+  introImage.Align=AlMostTop;
+  introImage.Margins.Bottom=30;
+  
+  lytContainer.Height = lytContainer.Height+introImage.Height+30;
+  
+  
+  // Title
+  lblTitle = plannerForm.AddNewProLabel(introImage, 'lblTitle', 'Ekili Mahsullerim');
+  lblTitle.Align = alTop;
+  lblTitle.Margins.Top=30;
+  lblTitle.Height = 60;
+  lblTitle.clProSettings.FontSize = 25;
+  lblTitle.clProSettings.TextSettings.Font.Style = [fsBold];
+  lblTitle.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+  lblTitle.clProSettings.FontHorzAlign = palCenter;
+  lblTitle.SetclProSettings(lblTitle.clProSettings);
+  
+  //lytContainer.Height = lytContainer.Height+lblTitle.Height+lblTitle.Margins.Top;
+  
+  cardID=0;
+  
+  try
+  Qry = Clomosy.DBSQLiteQueryWith('SELECT * FROM CropCards WHERE username = ' + QuotedStr(userName));
+  Qry.OpenOrExecute;
+
+  if (Qry.Found)
+  {
+    while (not Qry.Eof)
+    {
+      cropName = Qry.FieldByName('crop_name').AsString;
+      img      = Qry.FieldByName('img_url').AsString;
+      date     = Qry.FieldByName('planting_date').AsString;
+      notes    = Qry.FieldByName('notes').AsString;
+      fert     = Qry.FieldByName('fertilizer').AsString;
+
+      AddCropCard(cropName, img, date, notes, fert);
+      Qry.Next;
+    }
+  }
+  else{
+    //ShowMessage('No crops found for user'+ userName);
+  }
+except
+  ShowMessage('Exception Class: ' + LastExceptionClassName + ' Exception Message: ' + LastExceptionMessage);
+}
+  
+
+  btnAddCrop = plannerForm.AddNewProButton(lytContainer, 'btnAddCrop', '+');
+  btnAddCrop.Width = 60;
+  btnAddCrop.Height = 60;
+  
+  btnAddCrop.Margins.Left=150;
+  btnAddCrop.Margins.Right=150;
+  
+  cropCARD = plannerForm.clFindComponent('card_' + IntToStr(cardID));
+  
+  if(cropCARD <> Nil){
+    btnAddCrop.Align = alNone;
+    btnAddCrop.Position.X = cropCard.Position.X +140;
+    btnAddCrop.Position.Y = cropCard.Position.Y + 300;
+  }
+  
+  else{
+    btnAddCrop.Align=AlTop;
+  }
+  
+  
+  
+  btnAddCrop.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50');  // yeşil arka plan
+  btnAddCrop.clProSettings.IsRound = True;
+  btnAddCrop.clProSettings.BorderWidth = 0;
+  btnAddCrop.clProSettings.RoundWidth=50;
+  btnAddCrop.clProSettings.RoundHeight=50;
+  btnAddCrop.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+  btnAddCrop.clProSettings.TextSettings.Font.Style = [fsBold];
+  btnAddCrop.clProSettings.FontSize=25;
+  //btnAddCrop.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/plus-circle-green.png';
+  //btnAddCrop.clProSettings.PictureMargin = 10;
+  btnAddCrop.SetclProSettings(btnAddCrop.clProSettings);
+  
+  // Event for opening crop form (to be created later)
+  plannerForm.AddNewEvent(btnAddCrop, tbeOnClick, 'OpenNewCropPanel');
+  
+  
+  lytContainer.Height = lytContainer.Height+btnAddCrop.Height+170;
+  
+  //bottom navigation panel
+  
+  bottomPanel=plannerForm.AddNewProPanel(plannerForm, 'bottomPanel');
+  bottomPanel.Align = alBottom;
+  bottomPanel.Width = 280;
+  bottomPanel.Height = 70;
+  bottomPanel.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  bottomPanel.clProSettings.IsTransparent = False; 
+  bottomPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFFFF'); 
+  //loginPanel.Opacity=0.5;
+  bottomPanel.SetclProSettings(bottomPanel.clProSettings);
+  
+  lytContainer.Height = lytContainer.Height+bottomPanel.Height+30;
+  
+  
+  //home button
+  
+  
+  btn1=plannerForm.AddNewProButton(bottomPanel, 'btn1', '');
+  btn1.Align=AlLeft;
+  
+  
+  btn1.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/house-chimney.png';
+  btn1.SetclProSettings(btn1.clProSettings);
+  btn1.Width=30;
+  btn1.Height=30;
+  btn1.Margins.Left=50;
+  btn1.Margins.Right=60;
+  plannerForm.addNewEvent(btn1, tbeOnClick, 'Btn1Function');
+  
+ 
+  
+    
+  btn2=plannerForm.AddNewProButton(bottomPanel, 'btn2', '');
+  btn2.Align=AlLeft;
+  btn2.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/universal-access.png';
+  btn2.SetclProSettings(btn2.clProSettings);
+  btn2.Width=30;
+  btn2.Height=30;
+  btn2.Margins.Right=60;
+  plannerForm.addNewEvent(btn2, tbeOnClick, 'Btn2Function');
+  
+  
+  
+  btn3=plannerForm.AddNewProButton(bottomPanel, 'btn3', '');
+  btn3.Align=AlLeft;
+  btn3.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/plant-growth%20(2).png';
+  btn3.SetclProSettings(btn3.clProSettings);
+  btn3.Width=30;
+  btn3.Height=30;
+  btn3.Margins.Right=60;
+  plannerForm.addNewEvent(btn3, tbeOnClick, 'Btn3Function');
+  
+  
+  
+  
+  btn4=plannerForm.AddNewProButton(bottomPanel, 'btn4', '');
+  btn4.Align=AlLeft;
+  btn4.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/user.png';
+  btn4.SetclProSettings(btn4.clProSettings);
+  btn4.Width=30;
+  btn4.Height=30;
+  btn4.Margins.Right=30;
+  plannerForm.addNewEvent(btn4, tbeOnClick, 'Btn4Function');
+  
+  plannerForm.Run;
+  
+  
+}
+
+
+
+
+
+

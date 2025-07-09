@@ -1,0 +1,1253 @@
+var
+mainForm:TCLForm;
+mainScrollBox:TCLVertScrollBox;
+i:Integer;
+testImage:TCLProImage;
+lytContainer:TCLLayout; //main vertical container
+
+bottomPanel:TCLProPanel;
+
+newPasswordIcon:TCLProImage;
+
+btn1, btn2, btn3, btn4 :TCLProButton;
+btn1Label, btn2Label, btn3Label, btn4Label :TCLProLabel;
+
+homeGreenImage:TCLProImage;
+
+helloLabel, lbl:TCLProLabel;
+
+todayDate : TclDateTime;
+todayDateLabel:TCLProLabel;
+weekDay:String;
+
+weatherPanel:TCLProPanel;
+
+locationLabel,temperatureLabel, humidityLabel, precLabel, pressLabel, windLabel:TCLProLabel;
+humidityValueLabel, precValueLabel, pressValueLabel, windValueLabel:TCLProLabel;
+sunriseLabel, sunsetLabel, sunriseValueLabel, sunsetValueLabel:TCLProPanel;
+
+locationIcon, weatherIcon, sunCycleIcon:TCLProImage;
+
+
+labelCrops, labelInvest, labelTip:TCLProLabel;
+
+cropsBox:TCLHorzScrollBox;
+lytContainer2:TCLLayout;   //for crops 
+lytContainer3:TCLLayout;
+
+testImg:TCLProButton;
+
+transparentPanel, userMsgPanel, aiMsgPanel:TCLProPanel;
+
+dailyTipPanel:TCLProImage;
+lblTip, lblTitle :TCLProLabel;
+
+username:String;
+fullName:String;
+
+messageCount, imageCount:Integer;
+
+database, password:String;
+Qry: TClSQLiteQuery;
+
+
+//alttaki kisim chat islevi ile alakalidir 
+
+chatButton:TCLProButton;
+chatIsOpened:Boolean;
+isCreated:Boolean;
+chatScrollBox:TCLVertScrollBox;
+chatMessageLayout: TCLLayout;
+
+base64Image: String;
+
+QuestionEdit : TclProEdit;
+SendButton, SendImageButton, ChooseImageButton : TClProButton;
+ChatPnl,MsjPnl:TclProPanel;
+MsgList:TclMemo;
+MainLyt : TClLayout;
+MainTitleLbl:TclLabel;
+MyMQTT : TclMQTT;
+strIncomingData : String;
+Rest: TclRest;
+API_KEY: string;
+RequestBody: string;
+
+cameraImage, messageImage:TCLImage;
+
+MyHttp : TclHttp;
+JSONVeri : String;
+
+
+QCrop: TClSQLiteQuery;
+cropPanel: TClProPanel;
+cropImage: TClProImage;
+cropLabel: TClProLabel;
+cropName, imgUrl: String;
+
+noDataButton:TCLProButton;
+isButtonCreated:Boolean;
+
+closeChatPnlBtn:TCLProButton;
+
+keyboardTimer:TCLTimer;
+startDuration:Integer;
+
+
+//klavye acilista ve kapanista calisan fonksiyonlar
+
+void closeKeyboard;
+{
+   if (not mainForm.clVKVisible){
+     //ShowMessage('Keyboard is hidden!');
+     chatPnl.Position.Y=chatPnl.Position.Y+140;
+     keyboardTimer.Enabled=False;
+   }
+
+}
+
+void VirtualKeyboardShow;
+{
+  if (mainForm.clVKVisible)
+    //ShowMessage('Keyboard is visible! Height = ' + IntToStr(mainForm.clVKBoundsHeight));
+    chatPnl.Position.Y=chatPnl.Position.Y-140;
+    
+    //startDuration=0;
+    
+    keyboardTimer.Enabled = True;
+}
+
+
+//sayfa arasi gezinme buton fonksiyonlari
+
+void Btn1Function;
+{
+  //Clomosy.RunUnit('MainPage');
+  //mainForm.clHide;
+  
+}
+void Btn2Function;
+{
+  Clomosy.RunUnit('GuidePage');
+  mainForm.clHide;
+}
+void Btn3Function;
+{
+  Clomosy.RunUnit('PlannerPage');
+  mainForm.clHide;
+}
+void Btn4Function;
+{
+  Clomosy.RunUnit('ProfilePage');
+  mainForm.clHide;
+}
+
+//yonlendirme fonksiyonlari
+
+void goToGuidePage;
+{
+  Clomosy.RunUnit('GuidePage');
+  mainForm.clHide;
+}
+
+void goToPlannerPage;
+{
+  Clomosy.RunUnit('PlannerPage');
+  mainForm.clHide;
+}
+
+
+//GEMINI AI chat fonksiyonlari
+
+void ACompletedProc;
+var
+messageLength:Integer;
+{
+  if (Rest.Response <> '') {
+  
+  //ShowMessage(Rest.Response); // The data returned from the POST request in JSON format via Gemini.
+  strIncomingData = Clomosy.CLParseJSON(Rest.Response,'candidates.0.content.parts.0.text');
+  messageLength=Length(strIncomingData)+15;
+  
+  messageCount=messageCount+1;
+  aiMsgPanel = mainForm.AddNewProPanel(chatMessageLayout, 'messageNo'+IntToStr(messageCount));
+  aiMsgPanel.Align = alTop;
+  aiMsgPanel.Height = Round((messageLength*30)/35);  //mesaj paneli yukseklik ayarlamalari (farkli degerler denenebilir)
+  aiMsgPanel.Margins.Bottom = 10;
+  chatMessageLayout.Height = chatMessageLayout.Height + aiMsgPanel.Height + aiMsgPanel.Margins.Bottom;
+  aiMsgPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#F1F1F1'); 
+  aiMsgPanel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  aiMsgPanel.clProSettings.IsRound = True;
+  aiMsgPanel.clProSettings.RoundWidth = 15;
+  aiMsgPanel.clProSettings.RoundHeight = 15;
+  aiMsgPanel.SetclProSettings(aiMsgPanel.clProSettings);
+
+  lbl = mainForm.AddNewProLabel(aiMsgPanel, 'messageNo'+IntToStr(messageCount)+'text', strIncomingData );
+  lbl.Align = alClient;
+  lbl.Margins.Top = 10;
+  lbl.Margins.Bottom = 10;
+  lbl.clProSettings.FontSize = 18;
+  lbl.clProSettings.WordWrap = True;
+  
+  lbl.SetclProSettings(lbl.clProSettings);
+  
+  }
+}
+
+void RestCreate(ABaseUrl, ABody :String);
+{
+  Rest = TclRest.Create;
+  Rest.Accept = 'application/json';
+  Rest.ContentType = 'application/json'; // Content-Type
+  Rest.Method = rmPOST;
+  Rest.ConnectTimeOut = 30000;
+  Rest.BaseURL = ABaseUrl; //'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + API_KEY
+  Rest.Body = ABody;
+  Rest.OnCompleted = 'ACompletedProc';
+  Rest.ExecuteAsync;
+  
+}
+
+void SelectImage;
+{
+  Inc(imageCount);
+  cameraImage = mainForm.AddNewImage(mainForm, 'cameraImage'+IntToStr(imageCount));
+  cameraImage.Height=100;
+  cameraImage.Width=100;
+  cameraImage.Align=AlNone;
+  cameraImage.Visible=False;
+    
+  Clomosy.ImageChooser(mainForm, cameraImage);
+  
+  
+}
+
+
+void BtnSendImageClick;
+var
+messageLength:Integer;
+memStream:TCLMemoryStream;
+{
+  //ShowMessage('Send button clicked!');
+  //MyMQTT.Connect;
+ //if ((Clomosy.AppUserProfile==1) && (QuestionEdit.Text <> ''))
+  
+  //mainForm.AddAssetFromUrl('https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/partly-cloudy.png');
+  //base64Image= Clomosy.FileToBase64(clPathCombine('partly-cloudy.png',Clomosy.AppFilesPath));
+  
+  if (QuestionEdit.Text <> '')
+  {
+    
+    messageCount=messageCount+1;
+    
+    
+    userMsgPanel = mainForm.AddNewProPanel(chatMessageLayout, 'messageNo'+IntToStr(messageCount));
+    userMsgPanel.Align = alTop;
+    userMsgPanel.Height = 160; //mesaj paneli yukseklik ayarlamalari (farkli degerler denenebilir)
+    userMsgPanel.Margins.Bottom = 10;
+    chatMessageLayout.Height = chatMessageLayout.Height + userMsgPanel.Height + userMsgPanel.Margins.Bottom;
+    userMsgPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#D4EDDA'); // soft green
+    userMsgPanel.clProSettings.FontColor = clAlphaColor.clHexToColor('#155724');
+    userMsgPanel.clProSettings.IsRound = True;
+    userMsgPanel.clProSettings.RoundWidth = 15;
+    userMsgPanel.clProSettings.RoundHeight = 15;
+    userMsgPanel.SetclProSettings(userMsgPanel.clProSettings);
+    
+    
+    //simdi kullanicinin resim sectiginden emin olmamiz lazim
+   if((cameraImage.Bitmap <> Nil) && (cameraImage.Bitmap.Width > 0))
+  {
+    memStream = TCLMemoryStream.Create;
+    cameraImage.Bitmap.SaveToStream(memStream);
+    base64Image = Clomosy.StreamToBase64(memStream);
+   }
+   else{
+     ShowMessage('Resim seciniz !');
+   }
+    
+    //base64Image=Clomosy.FileToBase64(clPathCombine('grapes.jpg', Clomosy.AppFilesPath));
+    
+    
+    base64Image= clGetStringReplace(base64Image, #13#10, '');
+    base64Image= clGetStringReplace(base64Image, #10, '');
+    base64Image= clGetStringReplace(base64Image, #13, '');
+    base64Image= Trim(base64Image);
+
+    //ShowMessage(base64Image);
+    
+    lbl = mainForm.AddNewProLabel(userMsgPanel, 'messageNo'+IntToStr(messageCount)+'text', QuestionEdit.Text);
+    
+    lbl.Align=AlTop;
+    lbl.Margins.Top= 10;
+    
+    lbl.clProSettings.FontSize = 18;
+    lbl.clProSettings.WordWrap = True;
+    lbl.SetclProSettings(lbl.clProSettings);
+    
+    messageImage = mainForm.AddNewImage(userMsgPanel, 'messageImage'+IntToStr(imageCount));
+    messageImage.Bitmap=cameraImage.Bitmap;
+    
+    messageImage.Height=100;
+    messageImage.Width=100;
+    messageImage.Margins.Top=10;
+    messageImage.Align=AlTop;
+    messageImage.Visible=True;
+    
+  
+    API_KEY = 'AIzaSyAjaRftzV0zwy-If4WSDzD_uX5XeVmHp1w';  //  Enter your own API key here.
+      // Generate the JSON data to be sent
+      RequestBody = '{
+    "contents": [
+      {
+        "parts": [
+          {
+            "inline_data": {
+              "mime_type": "image/jpeg",
+              "data": "' + base64Image + '"
+            }
+          },
+          {
+            "text": "' + QuestionEdit.Text + '"
+          }
+        ]
+      }
+    ]
+  }';
+  
+    //ShowMessage(RequestBody);
+  
+   RestCreate('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + API_KEY,RequestBody);
+    QuestionEdit.Text = '';
+  } else
+  {
+    ShowMessage('Please, ask a question!');
+  }
+ 
+}
+
+void BtnSendClick;
+var
+messageLength:Integer;
+{
+  
+  if (QuestionEdit.Text <> '')
+  {
+  
+    messageLength=Length(QuestionEdit.Text)+20;
+    
+   
+    messageCount=messageCount+1;
+    userMsgPanel = mainForm.AddNewProPanel(chatMessageLayout, 'messageNo'+IntToStr(messageCount));
+    userMsgPanel.Align = alTop;
+   // userMsgPanel.Height = 60;
+    userMsgPanel.Height = Round((messageLength*30)/35); //mesaj paneli yukseklik ayarlamalari (farkli degerler denenebilir)
+    userMsgPanel.Margins.Bottom = 10;
+    chatMessageLayout.Height = chatMessageLayout.Height + userMsgPanel.Height + userMsgPanel.Margins.Bottom;
+    userMsgPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#D4EDDA'); // soft green
+    userMsgPanel.clProSettings.FontColor = clAlphaColor.clHexToColor('#155724');
+    userMsgPanel.clProSettings.IsRound = True;
+    userMsgPanel.clProSettings.RoundWidth = 15;
+    userMsgPanel.clProSettings.RoundHeight = 15;
+    userMsgPanel.SetclProSettings(userMsgPanel.clProSettings);
+    
+    
+    
+    lbl = mainForm.AddNewProLabel(userMsgPanel, 'messageNo'+IntToStr(messageCount)+'text', QuestionEdit.Text);
+    lbl.Align = alClient;
+    lbl.Margins.Top= 10;
+    lbl.clProSettings.FontSize = 18;
+    lbl.clProSettings.WordWrap = True;
+    lbl.SetclProSettings(lbl.clProSettings);
+    
+  
+    API_KEY = 'AIzaSyAjaRftzV0zwy-If4WSDzD_uX5XeVmHp1w';  //  Enter your own API key here.
+      // Generate the JSON data to be sent
+      RequestBody = '{
+      "contents": [
+        {
+          "parts": [
+            {
+              "text": "'+QuestionEdit.Text+'"
+            }
+          ]
+        }
+      ]
+    }';
+    RestCreate('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + API_KEY,RequestBody);
+    QuestionEdit.Text = '';
+  } else
+  {
+    ShowMessage('Please, ask a question!');
+  }
+ 
+}
+
+
+
+
+//void MyMQTTPublishReceived;
+//{
+//  if (MyMQTT.ReceivedAlright ) 
+//  {
+//    if (Clomosy.AppUserProfile <> 1 )
+ //   {
+      //MsgList.Lines.Add('');
+      //MsgList.Lines.Add(MyMQTT.ReceivedMessage);
+      //AddAIMessage(MyMQTT.ReceivedMessage);
+      //MsgList.ScrollTo(0,MsgList.Lines.Count*MsgList.Lines.Count,True);
+//    }
+//  }
+//}
+
+
+void closeChatPnl;
+{
+  
+  chatPnl.Position.Y=chatPnl.Position.Y+140;
+  ChatPnl.Visible=False;
+  chatIsOpened=False;
+  
+}
+
+//chat paneli acma fonksiyonu
+
+void chatButtonFunction;
+{
+
+  
+  chatIsOpened= not chatIsOpened;
+  
+  if(chatIsOpened){
+    if(isCreated == False){
+    
+  // 1. Ortada beyaz bir panel oluşturalım
+    ChatPnl = mainForm.AddNewProPanel(mainForm, 'ChatPnl');
+    ChatPnl.Align = alNone;
+    ChatPnl.Position.X=10;
+    ChatPnl.Position.Y=130;
+    ChatPnl.Width = 370;
+    ChatPnl.Height = 550;
+    ChatPnl.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFFFF'); // beyaz
+    ChatPnl.clProSettings.BorderColor = clAlphaColor.clHexToColor('#777777'); // açık gri kenar
+    ChatPnl.clProSettings.BorderWidth = 2;
+    ChatPnl.clProSettings.IsRound = True;
+    ChatPnl.clProSettings.RoundWidth = 20;
+    ChatPnl.clProSettings.RoundHeight = 20;
+    ChatPnl.SetclProSettings(ChatPnl.clProSettings);
+    ChatPnl.Visible = True;
+    
+    chatScrollBox=mainForm.AddNewVertScrollBox(ChatPnl, 'ChatScrollBox');
+    
+    chatScrollBox.Align = alMostTop;
+    chatScrollBox.Height = ChatPnl.Height-80;
+    chatScrollBox.Margins.Top=10;
+    chatScrollBox.Margins.Bottom=10;
+    
+    chatMessageLayout = mainForm.AddNewLayout(ChatScrollBox, 'chatMessageLayout');
+    chatMessageLayout.Align = alTop;
+    
+    chatMessageLayout.Width = ChatPnl.Width;
+    chatMessageLayout.Margins.Top = 10;
+    chatMessageLayout.Margins.Left = 10;
+    chatMessageLayout.Margins.Right = 10;
+    chatMessageLayout.Margins.Bottom = 10;
+    chatMessageLayout.Height = 0;
+    
+
+    // 3. Mesaj yazma kutusu
+    QuestionEdit = mainForm.AddNewProEdit(ChatPnl, 'QuestionEdit', 'Bir şeyler yaz...');
+    QuestionEdit.Align = alBottom;
+    
+    QuestionEdit.Margins.Left = 10;
+    QuestionEdit.Margins.Top = 10;
+    QuestionEdit.Margins.Bottom = 10;
+    QuestionEdit.Margins.Right = 10; 
+    QuestionEdit.Height=50;
+    QuestionEdit.Width=70;
+    QuestionEdit.clProSettings.FontHorzAlign = palLeading;
+    QuestionEdit.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#F1F1F1');
+    QuestionEdit.clProSettings.BorderColor = clAlphaColor.clHexToColor('#CCCCCC');
+    QuestionEdit.clProSettings.IsRound = True;
+    QuestionEdit.clProSettings.RoundWidth = 12;
+    QuestionEdit.clProSettings.RoundHeight = 12;
+    QuestionEdit.setClProSettings(QuestionEdit.clProSettings);
+    
+    // 4. Gönder butonu
+    SendButton = mainForm.AddNewProButton(ChatPnl, 'SendButton', 'Gönder');
+    SendButton.Align = alNone;
+    SendButton.Width = 70;
+    SendButton.Height = 50;
+    SendButton.Position.X = ChatPnl.Width - SendButton.Width - 60; // Sağ kenarda
+    SendButton.Position.Y = ChatPnl.Height - SendButton.Height - 10;
+    SendButton.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50'); // Green
+    SendButton.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF'); // White text
+    SendButton.clProSettings.FontSize = 18;
+    SendButton.clProSettings.TextSettings.Font.Style = [fsBold];
+    SendButton.clProSettings.IsRound = True;
+    SendButton.clProSettings.RoundWidth = 12;
+    SendButton.clProSettings.RoundHeight = 12;
+    SendButton.SetclProSettings(SendButton.clProSettings);
+
+    mainForm.AddNewEvent(SendButton, tbeOnClick, 'BtnSendClick'); // Buton tıklandığında BtnSendClick fonksiyonunu çağır
+    
+    
+    SendImageButton = mainForm.AddNewProButton(ChatPnl, 'SendImageButton', '>');
+    SendImageButton.Align = alNone;
+    SendImageButton.Width = 50;
+    SendImageButton.Height = 50;
+    SendImageButton.Position.X = SendButton.Position.X+75; // Sağ kenarda
+    SendImageButton.Position.Y = SendButton.Position.Y;
+    SendImageButton.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50'); // Green
+    SendImageButton.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF'); // White text
+    SendImageButton.clProSettings.FontSize = 18;
+    SendImageButton.clProSettings.TextSettings.Font.Style = [fsBold];
+    SendImageButton.clProSettings.IsRound = True;
+    SendImageButton.clProSettings.RoundWidth = 12;
+    SendImageButton.clProSettings.RoundHeight = 12;
+    
+    
+    SendImageButton.SetclProSettings(SendImageButton.clProSettings);
+
+    mainForm.AddNewEvent(SendImageButton, tbeOnClick, 'BtnSendImageClick');
+    
+    
+    ChooseImageButton = mainForm.AddNewProButton(ChatPnl, 'ChooseImageButton', '');
+    ChooseImageButton.Align = alNone;
+    ChooseImageButton.Width = 50;
+    ChooseImageButton.Height = 50;
+    ChooseImageButton.Position.X = SendImageButton.Position.X; // Sağ kenarda
+    ChooseImageButton.Position.Y = SendImageButton.Position.Y-55;
+    ChooseImageButton.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50'); // Green
+    ChooseImageButton.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF'); // White text
+    ChooseImageButton.clProSettings.FontSize = 18;
+    ChooseImageButton.clProSettings.TextSettings.Font.Style = [fsBold];
+    ChooseImageButton.clProSettings.IsRound = True;
+    ChooseImageButton.clProSettings.RoundWidth = 12;
+    ChooseImageButton.clProSettings.RoundHeight = 12;
+    ChooseImageButton.clProSettings.PictureSource='https://pixsector.com/cache/d01b7e30/av7801257c459e42a24b5.png';
+    
+    ChooseImageButton.SetclProSettings(ChooseImageButton.clProSettings);
+
+    mainForm.AddNewEvent(ChooseImageButton, tbeOnClick, 'SelectImage');
+    
+    closeChatPnlBtn = mainForm.AddNewProButton(ChatPnl, 'closeChatPnlBtn', 'kapat');
+    closeChatPnlBtn.Align = alNone;
+    closeChatPnlBtn.Width = 50;
+    closeChatPnlBtn.Height = 50;
+    closeChatPnlBtn.Position.X = SendImageButton.Position.X; // Sağ kenarda
+    closeChatPnlBtn.Position.Y = SendImageButton.Position.Y-485;
+    closeChatPnlBtn.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50'); // Green
+    closeChatPnlBtn.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF'); // White text
+    closeChatPnlBtn.clProSettings.FontSize = 15;
+    closeChatPnlBtn.clProSettings.TextSettings.Font.Style = [fsBold];
+    closeChatPnlBtn.clProSettings.IsRound = True;
+    closeChatPnlBtn.clProSettings.RoundWidth = 12;
+    closeChatPnlBtn.clProSettings.RoundHeight = 12;
+    
+    
+    closeChatPnlBtn.SetclProSettings(closeChatPnlBtn.clProSettings);
+    
+    mainForm.AddNewEvent(closeChatPnlBtn, tbeOnCLick, 'closeChatPnl')
+    closeChatPnlBtn.Visible=False;
+    
+    isCreated=True;
+    
+    }
+  
+  else{
+    ChatPnl.Visible = True;
+  }
+  
+  }
+  
+  else{
+    ChatPnl.Visible=False;
+  }
+  //ShowMessage('Chat panel açıldı!');
+
+}
+
+
+
+
+
+//ana form (home page) kodlari
+
+
+{
+  mainForm=TCLForm.Create(Self);
+  
+  keyboardTimer=mainForm.AddNewTimer(mainForm, 'keyboardTimer', 100 );
+  mainForm.AddNewEvent(keyboardTimer,tbeOnTimer,'closeKeyboard');
+  
+  database=Clomosy.AppFilesPath+'ClomosyDatabase.db3';
+  password = '';
+  
+  mainForm.AddNewEvent(mainForm, tbeOnVirtualKeyboardShown, 'VirtualKeyboardShow');
+  
+
+  
+  MyHttp = TclHttp.Create(Nil);
+  
+  //ilk degerler
+  chatIsOpened=False;
+  isCreated=False;
+  messageCount=0;
+  imageCount=0;
+  
+ 
+  
+  mainForm.SetFormColor('#F2F2F2','',clGNone);
+  
+  mainScrollBox = mainForm.AddNewVertScrollBox(mainForm,'mainScrollBox');
+  mainScrollBox.Align = alMostTop;
+  mainScrollBox.Height = mainForm.clheight+30;
+  mainScrollBox.ShowScrollBars = False;
+  
+  
+  lytContainer=mainForm.AddNewLayout(mainScrollBox, 'lytContainer');
+  lytContainer.Align = alMostTop;
+  lytContainer.Height = 1100; 
+  
+  //1. kisim - karsilama metni, tarih bilgisi, hava durumu
+  
+  homeGreenImage=mainForm.AddNewProImage(lytContainer, 'homeGreenImage');
+  homeGreenImage.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/home-green-i.png';
+  
+  homeGreenImage.Width=600;
+  homeGreenImage.Height=200;
+  homeGreenImage.SetclProSettings(homeGreenImage.clProSettings);
+  homeGreenImage.Align=AlMostTop;
+  
+  
+  username= Clomosy.GlobalVariableString; //giris yapan kullanici adi
+  
+  
+  //kullanicin ismini gosteren fonksiyon
+  
+  try
+    Clomosy.DBSQLiteConnect(database, password);
+    
+    Qry = Clomosy.DBSQLiteQueryWith('SELECT name FROM Users WHERE username = ' + QuotedStr(userName));
+    Qry.OpenOrExecute;
+
+  if (Qry.Found){
+    fullName = Qry.FieldByName('name').AsString}
+  else{
+    fullName = userName;} // fallback
+
+except
+  fullName = userName; // hata olursa yine username göster
+}
+  
+  helloLabel=mainForm.addNewProLabel(homeGreenImage, 'helloLabel', 'Merhaba, '+ clGetStringTo(fullName, ' '));
+  helloLabel.Align=AlTop;
+  helloLabel.Height = 50;
+  helloLabel.Margins.Top=30;
+  helloLabel.Margins.Left=20;
+  helloLabel.clProSettings.FontSize = 30;
+  helloLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  helloLabel.clProSettings.FontHorzAlign = palLeading;
+  helloLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF');
+  helloLabel.SetclProSettings(helloLabel.clProSettings);
+  
+  
+  //gemini AI chat button 
+  
+  chatButton=mainForm.AddNewProButton(homeGreenImage, 'chatButton', '');
+  chatButton.Align = alNone;
+  chatButton.Position.Y=helloLabel.Position.Y-10;
+  chatButton.Position.X=helloLabel.Position.X+290;
+  chatButton.Width = 70;
+  chatButton.Height = 70;
+  
+  chatButton.clProSettings.IsFill = True; 
+  chatButton.clProSettings.PictureSource = 'https://static.vecteezy.com/system/resources/previews/046/861/646/non_2x/gemini-icon-on-a-transparent-background-free-png.png';
+  chatButton.SetclProSettings(chatButton.clProSettings);
+  mainForm.AddNewEvent(chatButton,tbeOnClick,'chatButtonFunction');
+  
+  
+  //tarih 
+  
+  todayDate = Date;
+  
+  case DayOfWeek(todayDate) of
+  {
+  
+    1: weekDay = 'Pazar';
+    2: weekDay = 'Pazartesi';
+    3: weekDay = 'Salı';
+    4: weekDay = 'Çarşamba';
+    5: weekDay = 'Perşembe';
+    6: weekDay = 'Cuma';
+    7: weekDay = 'Cumartesi';
+  
+  }
+  
+  
+  todayDateLabel=mainForm.AddNewProLabel(homeGreenImage, 'todayDateLabel', weekDay +', '+DateToStr(todayDate));
+  todayDateLabel.Align=AlTop;
+  todayDateLabel.Margins.Left=20;
+  todayDateLabel.clProSettings.FontSize = 17;
+  todayDateLabel.clProSettings.FontHorzAlign = palLeading;
+  todayDateLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF');
+  todayDateLabel.SetclProSettings(todayDateLabel.clProSettings);
+  
+  
+  transparentPanel=mainForm.AddNewProPanel(lytContainer, 'transparentPanel');
+  transparentPanel.Height=210;
+  transparentPanel.clProSettings.IsTransparent=True;
+  transparentPanel.Align=AlMostTop;
+  transparentPanel.SetclProSettings(transparentPanel.clProSettings);
+  
+  
+  
+  //hava durumu bilgileri (her sayfa acilista guncellenmektedir)
+  
+  JSONVeri = MyHttp.GetRequest('http://api.weatherapi.com/v1/current.json?key=031e47eda9274efdb13141305251706&q=Konya&aqi=no');
+  
+  
+  
+  
+  weatherPanel=mainForm.AddNewProPanel(lytContainer, 'weatherPanel');
+  weatherPanel.Align = alNone;
+  weatherPanel.Position.X=20;
+  weatherPanel.Position.Y=130;
+  
+  weatherPanel.Width = 350;
+  weatherPanel.Height = 230;
+  weatherPanel.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  weatherPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  weatherPanel.clProSettings.RoundHeight = 30;
+  weatherPanel.clProSettings.RoundWidth = 30;
+  weatherPanel.clProSettings.BorderWidth = 1;
+  //weatherPanel.clProSettings.IsFill = True; 
+  weatherPanel.clProSettings.IsRound = True;
+  weatherPanel.SetclProSettings(weatherPanel.clProSettings);
+  
+  
+  
+  locationLabel=mainForm.addNewProLabel(weatherPanel, 'locationLabel', 'Selçuklu, Konya');
+  locationLabel.Align=AlTop;
+  locationLabel.Height=30;
+  locationLabel.Width=70;
+  locationLabel.clProSettings.FontSize = 17;
+  locationLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  locationLabel.Margins.Top=15;
+  locationLabel.Margins.Left=50;
+  locationLabel.clProSettings.FontHorzAlign = palLeading;
+  locationLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  locationLabel.setClProSettings(locationLabel.clProSettings);
+  
+  locationIcon=mainForm.addNewProImage(weatherPanel, 'locationIcon');
+  locationIcon.Align = alNone;
+  locationIcon.Position.X=weatherPanel.Position.X+0;
+  locationIcon.Position.Y=locationLabel.Position.Y-6;
+  locationIcon.Width = 20;
+  locationIcon.Margins.Left = 5;
+  locationIcon.Margins.Top = 5;
+  locationIcon.Margins.Bottom = 5;
+  mainForm.SetImage(locationIcon, 'https://cdn-icons-png.flaticon.com/512/535/535239.png'); // ← buraya kendi ikon bağlantını koy
+  
+  
+  temperatureLabel=mainForm.addNewProLabel(weatherPanel, 'temperatureLabel', Clomosy.CLParseJSON(JSONVeri, 'current.temp_c') + '°C');
+  temperatureLabel.Align=AlTop;
+  temperatureLabel.Height=50;
+  temperatureLabel.Width=70;
+  temperatureLabel.clProSettings.FontSize = 40;
+  temperatureLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  temperatureLabel.Margins.Top=5;
+  temperatureLabel.Margins.Left=30;
+  temperatureLabel.clProSettings.FontHorzAlign = palLeading;
+  temperatureLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  temperatureLabel.setClProSettings(temperatureLabel.clProSettings);
+  
+  weatherIcon=mainForm.addNewProImage(weatherPanel, 'weatherIcon'); //hava durumuna gore dinamik olarak degistirilmesi icin kod eklenebilir
+  weatherIcon.Align = alNone;
+  weatherIcon.Position.X=locationLabel.Position.X+190;
+  weatherIcon.Position.Y=locationLabel.Position.Y;;
+  weatherIcon.Width = 90;
+  weatherIcon.Height = 90;
+  weatherIcon.Margins.Left = 5;
+  weatherIcon.Margins.Top = 5;
+  weatherIcon.Margins.Bottom = 5;
+  mainForm.SetImage(weatherIcon, 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/partly-cloudy.png');
+  
+  
+  
+  humidityLabel=mainForm.addNewProLabel(weatherPanel, 'humidityLabel', 'Nem');
+  humidityLabel.Align=AlTop;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  humidityLabel.clProSettings.FontSize = 17;
+  //temperatureLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  humidityLabel.Margins.Top=10;
+  humidityLabel.Margins.Left=30;
+  humidityLabel.clProSettings.FontHorzAlign = palLeading;
+  humidityLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  humidityLabel.setClProSettings(humidityLabel.clProSettings);
+  
+  humidityValueLabel=mainForm.addNewProLabel(weatherPanel, 'humidityValueLabel', Clomosy.CLParseJSON(JSONVeri, 'current.humidity') + '%');
+  humidityValueLabel.Align=AlNone;
+  humidityValueLabel.Position.X=humidityLabel.Position.X;
+  humidityValueLabel.Position.Y=humidityLabel.Position.Y+25;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  humidityValueLabel.clProSettings.FontSize = 17;
+  humidityValueLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  humidityValueLabel.Margins.Top=10;
+  humidityValueLabel.Margins.Left=30;
+  humidityValueLabel.clProSettings.FontHorzAlign = palLeading;
+  humidityValueLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  humidityValueLabel.setClProSettings(humidityValueLabel.clProSettings);
+  
+  
+  
+  precLabel=mainForm.addNewProLabel(weatherPanel, 'precLabel', 'Yağış');
+  precLabel.Align=AlNone;
+  precLabel.Position.X=humidityLabel.Position.X+70;
+  precLabel.Position.Y=humidityLabel.Position.Y;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  precLabel.clProSettings.FontSize = 17;
+  //temperatureLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  precLabel.Margins.Top=10;
+  precLabel.Margins.Left=20;
+  precLabel.clProSettings.FontHorzAlign = palLeading;
+  precLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  precLabel.setClProSettings(precLabel.clProSettings);
+  
+  precValueLabel=mainForm.addNewProLabel(weatherPanel, 'precValueLabel', Clomosy.CLParseJSON(JSONVeri, 'current.precip_mm') +'mm');
+  precValueLabel.Align=AlNone;
+  precValueLabel.Position.X=precLabel.Position.X;
+  precValueLabel.Position.Y=precLabel.Position.Y+25;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  precValueLabel.clProSettings.FontSize = 17;
+  precValueLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  precValueLabel.Margins.Top=10;
+  precValueLabel.Margins.Left=20;
+  precValueLabel.clProSettings.FontHorzAlign = palLeading;
+  precValueLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  precValueLabel.setClProSettings(precValueLabel.clProSettings);
+  
+  
+  
+  pressLabel=mainForm.addNewProLabel(weatherPanel, 'pressLabel', 'Basınç');
+  pressLabel.Align=AlNone;
+  pressLabel.Position.X=precLabel.Position.X+80;
+  pressLabel.Position.Y=precLabel.Position.Y;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  pressLabel.clProSettings.FontSize = 17;
+  //temperatureLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  pressLabel.Margins.Top=10;
+  pressLabel.Margins.Left=20;
+  pressLabel.clProSettings.FontHorzAlign = palLeading;
+  pressLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  pressLabel.setClProSettings(pressLabel.clProSettings);
+  
+  pressValueLabel=mainForm.addNewProLabel(weatherPanel, 'pressValueLabel', Clomosy.CLParseJSON(JSONVeri, 'current.pressure_mb') + 'mb');
+  pressValueLabel.Align=AlNone;
+  pressValueLabel.Position.X=pressLabel.Position.X;
+  pressValueLabel.Position.Y=pressLabel.Position.Y+25;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  pressValueLabel.clProSettings.FontSize = 17;
+  pressValueLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  pressValueLabel.Margins.Top=10;
+  pressValueLabel.Margins.Left=20;
+  pressValueLabel.clProSettings.FontHorzAlign = palLeading;
+  pressValueLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  pressValueLabel.setClProSettings(pressValueLabel.clProSettings);
+  
+  windLabel=mainForm.addNewProLabel(weatherPanel, 'windLabel', 'Rüzgâr');
+  windLabel.Align=AlNone;
+  windLabel.Position.X=pressLabel.Position.X+90;
+  windLabel.Position.Y=pressLabel.Position.Y;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  windLabel.clProSettings.FontSize = 17;
+  //temperatureLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  windLabel.Margins.Top=10;
+  windLabel.Margins.Left=20;
+  windLabel.clProSettings.FontHorzAlign = palLeading;
+  windLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  windLabel.setClProSettings(windLabel.clProSettings);
+  
+  windValueLabel=mainForm.addNewProLabel(weatherPanel, 'windValueLabel', Clomosy.CLParseJSON(JSONVeri, 'current.wind_kph') + 'km/h');
+  windValueLabel.Align=AlNone;
+  windValueLabel.Position.X=windLabel.Position.X;
+  windValueLabel.Position.Y=windLabel.Position.Y+25;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  windValueLabel.clProSettings.FontSize = 17;
+  windValueLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  windValueLabel.Margins.Top=10;
+  windValueLabel.Margins.Left=20;
+  windValueLabel.clProSettings.FontHorzAlign = palLeading;
+  windValueLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  windValueLabel.setClProSettings(windValueLabel.clProSettings);
+  
+
+  
+  sunriseLabel=mainForm.addNewProLabel(weatherPanel, 'sunriseLabel', 'Gün Doğumu');
+  sunriseLabel.Align=AlNone;
+  sunriseLabel.Position.X=humidityValueLabel.Position.X-5;
+  sunriseLabel.Position.Y=humidityValueLabel.Position.Y+30;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  sunriseLabel.clProSettings.FontSize = 17;
+  //temperatureLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  sunriseLabel.Margins.Top=10;
+  sunriseLabel.Margins.Left=20;
+  sunriseLabel.clProSettings.FontHorzAlign = palLeading;
+  sunriseLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  sunriseLabel.setClProSettings(windLabel.clProSettings);
+  
+  sunriseValueLabel=mainForm.addNewProLabel(weatherPanel, 'sunriseValueLabel', '6:40');
+  sunriseValueLabel.Align=AlNone;
+  sunriseValueLabel.Position.X=sunriseLabel.Position.X;
+  sunriseValueLabel.Position.Y=sunriseLabel.Position.Y+20;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  sunriseValueLabel.clProSettings.FontSize = 17;
+  sunriseValueLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  sunriseValueLabel.Margins.Top=10;
+  sunriseValueLabel.Margins.Left=20;
+  sunriseValueLabel.clProSettings.FontHorzAlign = palLeading;
+  sunriseValueLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  sunriseValueLabel.setClProSettings(sunriseValueLabel.clProSettings);
+  
+  sunsetLabel=mainForm.addNewProLabel(weatherPanel, 'sunsetLabel', 'Gün Batımı');
+  sunsetLabel.Align=AlNone;
+  sunsetLabel.Position.X=windValueLabel.Position.X-20;
+  sunsetLabel.Position.Y=windValueLabel.Position.Y+30;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  sunsetLabel.clProSettings.FontSize = 17;
+  //temperatureLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  sunsetLabel.Margins.Top=10;
+  sunsetLabel.Margins.Left=20;
+  sunsetLabel.clProSettings.FontHorzAlign = palLeading;
+  sunsetLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  sunsetLabel.setClProSettings(sunsetLabel.clProSettings);
+  
+  
+  sunsetValueLabel=mainForm.addNewProLabel(weatherPanel, 'sunsetValueLabel', '20:15');
+  sunsetValueLabel.Align=AlNone;
+  sunsetValueLabel.Position.X=sunsetLabel.Position.X;
+  sunsetValueLabel.Position.Y=sunsetLabel.Position.Y+20;
+  //temperatureLabel.Height=50;
+  //temperatureLabel.Width=70;
+  sunsetValueLabel.clProSettings.FontSize = 17;
+  sunsetValueLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  sunsetValueLabel.Margins.Top=10;
+  sunsetValueLabel.Margins.Left=20;
+  sunsetValueLabel.clProSettings.FontHorzAlign = palCenter;
+  sunsetValueLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  sunsetValueLabel.setClProSettings(sunsetValueLabel.clProSettings);
+  
+  
+  //2. kisim - kullanicinin ektigi mahsuller
+  
+  labelCrops=mainForm.AddNewProLabel(lytContainer, 'labelCrops', 'Mahsulleriniz');
+  labelCrops.Align=AlNone;
+  labelCrops.Position.Y=weatherPanel.Position.Y+250;
+  labelCrops.Position.X=weatherPanel.Position.X+10;
+  labelCrops.Height=30;
+  labelCrops.Width=150;
+  labelCrops.clProSettings.FontSize = 20;
+  labelCrops.clProSettings.TextSettings.Font.Style = [fsBold];
+  labelCrops.Margins.Top=15;
+  labelCrops.Margins.Left=30;
+  labelCrops.clProSettings.FontHorzAlign = palLeading;
+  labelCrops.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  labelCrops.setClProSettings(labelCrops.clProSettings);
+  
+  cropsBox=mainForm.AddNewHorzScrollBox(lytContainer, 'cropsBox');
+  cropsBox.ShowScrollBars=False;
+  cropsBox.Align=AlTop;
+  cropsBox.Margins.Left=30;
+  cropsBox.Margins.Right=30;
+  
+  
+  cropsBox.Height=120;
+  cropsBox.Width=500;
+  
+  lytContainer2 = mainForm.AddNewLayout(cropsBox,'lytContainer2');
+  lytContainer2.Align = alLeft;
+  lytContainer2.Width = 0;
+  
+  
+try
+  Clomosy.DBSQLiteConnect(database, password);  
+
+  QCrop = Clomosy.DBSQLiteQueryWith('SELECT crop_name, img_url FROM CropCards WHERE username = ' + QuotedStr(userName));
+  QCrop.OpenOrExecute;
+  
+  if (QCrop.EOF){
+  
+      //ShowMessage('No record found !');
+    
+      // No record found, show a "+" button in the center
+      noDataButton = mainForm.AddNewProButton(lytContainer2, 'noDataButton', '+');
+      noDataButton.Align = alCenter;
+      noDataButton.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#DDDDDD');
+      noDataButton.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+      noDataButton.clProSettings.FontSize = 28;
+      noDataButton.SetclProSettings(noDataButton.clProSettings);
+      isButtonCreated=True;
+      
+      mainForm.AddNewEvent(noDataButton, tbeOnclick, 'goToPlannerPage' );
+      lytContainer2.Width = 350;
+      
+  }
+  else{
+  
+  //mahsuller bulunduysa goster
+  
+  if(isButtonCreated==True){
+    noDataButton.Visible=False;
+    noDataButton.Free;
+    lytContainer2.Width=0;
+  }
+  
+  
+  while (not QCrop.EOF){
+  
+    cropName = QCrop.FieldByName('crop_name').AsString;
+    imgUrl = QCrop.FieldByName('img_url').AsString;
+
+    
+    cropPanel = mainForm.AddNewProPanel(lytContainer2, 'cropPanel' + IntToStr(QCrop.RecNo));
+    cropPanel.Align = alLeft;
+    cropPanel.Width = 100;
+    cropPanel.Height = 120;
+    cropPanel.Margins.Right = 20;
+    cropPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFFFF'); 
+    cropPanel.clProSettings.BorderColor=clAlphaColor.clHexToColor('#FFFFFF'); 
+    cropPanel.clProSettings.BorderWidth=2;
+    cropPanel.SetclProSettings(cropPanel.clProSettings);
+
+    
+    cropImage = mainForm.AddNewProImage(cropPanel, 'cropImage' + IntToStr(QCrop.RecNo));
+    cropImage.Align = alTop;
+    cropImage.Height = 80;
+    cropImage.Width = 80;
+    cropImage.clProSettings.IsRound = True;
+    cropImage.clProSettings.RoundWidth = 20;
+    cropImage.clProSettings.RoundHeight = 20;
+    cropImage.SetClProSettings(cropImage.clProSettings);
+    mainForm.SetImage(cropImage, imgUrl);
+
+    
+    cropLabel = mainForm.AddNewProLabel(cropPanel, 'cropLabel' + IntToStr(QCrop.RecNo), cropName);
+    cropLabel.Align = alBottom;
+    cropLabel.Height = 30;
+    cropLabel.clProSettings.FontSize = 14;
+    cropLabel.clProSettings.FontHorzAlign = palCenter;
+    cropLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+    cropLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+    cropLabel.SetclProSettings(cropLabel.clProSettings);
+
+    // Update container width
+    lytContainer2.Width = lytContainer2.Width + cropPanel.Width + cropPanel.Margins.Right;
+
+    QCrop.Next;
+  
+  }
+  
+  }
+  
+except
+  ShowMessage('Veritabanından mahsuller yüklenirken bir hata oluştu.');
+}
+  
+  
+  
+  //3.kisim - yatirim kategorileri
+  
+  labelInvest=mainForm.AddNewProLabel(lytContainer, 'labelInvest', 'Kategoriye göre yatırım yap');
+  labelInvest.Align=AlTop;
+  labelInvest.Height=30;
+  labelInvest.Width=150;
+  labelInvest.clProSettings.FontSize = 20;
+  labelInvest.clProSettings.TextSettings.Font.Style = [fsBold];
+  labelInvest.Margins.Top=15;
+  labelInvest.Margins.Left=30;
+  labelInvest.clProSettings.FontHorzAlign = palLeading;
+  labelInvest.clProSettings.FontColor = clAlphaColor.clHexToColor('#333333');
+  labelInvest.setClProSettings(labelInvest.clProSettings);
+ 
+  
+  lytContainer3 = mainForm.AddNewLayout(lytContainer, 'lytContainer3');
+  lytContainer3.Align=AlTop;
+  lytContainer3.Position.Y=labelInvest.Position.Y+20;
+  lytContainer3.Position.X=labelInvest.Position.X;
+  lytContainer3.Margins.Left=30;
+  lytContainer3.Width=0;
+  lytContainer3.Height=100;
+  
+  
+  
+  testImg=mainForm.AddNewProButton(lytContainer3,'testImg8', '');
+  testImg.Align = alLeft;
+  testImg.Width = 80;
+  testImg.Height = 80;
+  testImg.Margins.Right=7;
+  testImg.clProSettings.IsRound = True;
+  testImg.clProSettings.RoundWidth = 20;
+  testImg.clProSettings.RoundHeight = 20;
+  testImg.clProSettings.PictureSource='https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/safety.jpeg';
+  testImg.SetClProSettings(testImg.clProSettings);
+  mainForm.addNewEvent(testImg, tbeOnClick, 'goToGuidePage');
+  //mainForm.SetImage(testImg,'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/safety.jpeg');
+  lytContainer3.Width = lytContainer3.Width + testImg.Width + testImg.Margins.Right;
+  
+  
+  testImg=mainForm.AddNewProButton(lytContainer3,'testImg9', '');
+  testImg.Align = alLeft;
+  testImg.Width = 80;
+  testImg.Height = 80;
+  testImg.Margins.Right=7;
+  testImg.clProSettings.PictureSource='https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/low_risk_.jpeg';
+  testImg.SetClProSettings(testImg.clProSettings);
+  //mainForm.SetImage(testImg,'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/low_risk_.jpeg');
+  mainForm.addNewEvent(testImg, tbeOnClick, 'goToGuidePage');
+  lytContainer3.Width = lytContainer3.Width + testImg.Width + testImg.Margins.Right;
+  
+  
+  
+  
+  
+  testImg=mainForm.AddNewProButton(lytContainer3,'testImg10', '');
+  testImg.Align = alLeft;
+  testImg.Width = 80;
+  testImg.Height = 80;
+  testImg.Margins.Right=7;
+  testImg.clProSettings.PictureSource='https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/duration1.jpeg';
+  testImg.SetClProSettings(testImg.clProSettings);
+  //mainForm.SetImage(testImg,'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/duration1.jpeg');
+  mainForm.addNewEvent(testImg, tbeOnClick, 'goToGuidePage');
+  lytContainer3.Width = lytContainer3.Width + testImg.Width + testImg.Margins.Right;
+  
+  
+  testImg=mainForm.AddNewProButton(lytContainer3,'testImg11', '');
+  testImg.Align = alLeft;
+  testImg.Width = 80;
+  testImg.Height = 80;
+  testImg.Margins.Right=7;
+  testImg.clProSettings.PictureSource='https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/return.jpeg';
+  testImg.SetClProSettings(testImg.clProSettings);
+  //mainForm.SetImage(testImg,'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/return.jpeg');
+  mainForm.addNewEvent(testImg, tbeOnClick, 'goToGuidePage');
+  lytContainer3.Width = lytContainer3.Width + testImg.Width + testImg.Margins.Right;
+  
+  //4.kisim - gunluk ipucu 
+  
+  
+  dailyTipPanel = mainForm.AddNewProImage(lytContainer, 'dailyTipPanel');
+  dailyTipPanel.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/panel_daily_tip.png';
+  dailyTipPanel.Width = 580;
+  dailyTipPanel.Height = 410;
+  dailyTipPanel.Align = alNone;
+  dailyTipPanel.Position.X=lytContainer3.Position.X-120;
+  dailyTipPanel.Position.Y=lytContainer3.Position.Y+30;
+  dailyTipPanel.SetclProSettings(dailyTipPanel.clProSettings);
+
+  
+  lblTitle = mainForm.AddNewProLabel(dailyTipPanel, 'lblDailyTitle', '');
+  lblTitle.Text = '';
+  lblTitle.clProSettings.FontSize = 28;
+  lblTitle.clProSettings.TextSettings.Font.Style = [fsBold];
+  lblTitle.clProSettings.FontHorzAlign = palLeading;
+  lblTitle.clProSettings.WordWrap=True;
+  lblTitle.SetclProSettings(lblTitle.clProSettings);
+ 
+  lblTitle.Height=50;
+  lblTitle.Width=250;
+  lblTitle.Position.X=90;
+  lblTitle.Position.Y=70;
+  
+
+  // İpucu içeriği etiketi
+  lblTip = mainForm.AddNewProLabel(dailyTipPanel, 'lblDailyTip', 'Bugün toprağı çok sulamamaya dikkat et!');
+  lblTip.Text = 'Bugün toprağı çok sulamamaya dikkat et!';
+  lblTip.clProSettings.FontSize = 20;
+  lblTip.clProSettings.TextSettings.Font.Style = [fsBold];
+  lblTip.clProSettings.FontHorzAlign = palLeading;
+  lblTip.clProSettings.WordWrap=True;
+  lblTip.Height=50;
+  lblTip.Width=250;
+  //lblTip.Position.X=dailyTipPanel.Position.X+70;
+  //lblTip.Position.Y=dailyTipPanel.Position.Y-120;
+  lblTip.Position.X = 100;
+  lblTip.Position.Y = 50; // Relative to inside of dailyTipPanel
+
+  lblTip.SetclProSettings(lblTip.clProSettings);
+  
+  
+  
+  //5. kisim - gezinme butonlari
+  
+  //bottom navigation panel
+  
+  bottomPanel=mainForm.AddNewProPanel(mainForm, 'bottomPanel');
+  bottomPanel.Align = alBottom;
+  bottomPanel.Width = 280;
+  bottomPanel.Height = 70;
+  bottomPanel.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  bottomPanel.clProSettings.IsTransparent = False; 
+  bottomPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFFFF'); 
+  //loginPanel.Opacity=0.5;
+  bottomPanel.SetclProSettings(bottomPanel.clProSettings);
+  
+  
+  
+  
+  btn1=mainForm.AddNewProButton(bottomPanel, 'btn1', '');
+  btn1.Align=AlLeft;
+  
+  
+  btn1.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/house-chimney-full.png';
+  btn1.SetclProSettings(btn1.clProSettings);
+  btn1.Width=30;
+  btn1.Height=30;
+  btn1.Margins.Left=50;
+  btn1.Margins.Right=60;
+  mainForm.addNewEvent(btn1, tbeOnClick, 'Btn1Function');
+  
+    
+  btn2=mainForm.AddNewProButton(bottomPanel, 'btn2', '');
+  btn2.Align=AlLeft;
+  btn2.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/universal-access.png';
+  btn2.SetclProSettings(btn2.clProSettings);
+  btn2.Width=30;
+  btn2.Height=30;
+  btn2.Margins.Right=60;
+  mainForm.addNewEvent(btn2, tbeOnClick, 'Btn2Function');
+
+  
+  btn3=mainForm.AddNewProButton(bottomPanel, 'btn3', '');
+  btn3.Align=AlLeft;
+  btn3.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/plant-growth.png';
+  btn3.SetclProSettings(btn3.clProSettings);
+  btn3.Width=30;
+  btn3.Height=30;
+  btn3.Margins.Right=60;
+  mainForm.addNewEvent(btn3, tbeOnClick, 'Btn3Function');
+  
+  
+  btn4=mainForm.AddNewProButton(bottomPanel, 'btn4', '');
+  btn4.Align=AlLeft;
+  btn4.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/user.png';
+  btn4.SetclProSettings(btn4.clProSettings);
+  btn4.Width=30;
+  btn4.Height=30;
+  btn4.Margins.Right=30;
+  mainForm.addNewEvent(btn4, tbeOnClick, 'Btn4Function');
+  
+  
+  mainForm.Run;
+}

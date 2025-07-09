@@ -1,0 +1,710 @@
+var
+mainForm:TCLForm;
+mainScrollBox:TCLVertScrollBox;
+i:Integer;
+testImage:TCLProImage;
+lytContainer:TCLLayout; //main vertical container
+
+bottomPanel:TCLProPanel;
+
+newPasswordIcon:TCLProImage;
+
+btn1, btn2, btn3, btn4 :TCLProButton;
+btn1Label, btn2Label, btn3Label, btn4Label :TCLProLabel;
+
+homeGreenImage:TCLProImage;
+
+helloLabel, lbl:TCLProLabel;
+
+todayDate : TclDateTime;
+todayDateLabel:TCLProLabel;
+
+weatherPanel:TCLProPanel;
+
+locationLabel,temperatureLabel, humidityLabel, precLabel, pressLabel, windLabel:TCLProLabel;
+humidityValueLabel, precValueLabel, pressValueLabel, windValueLabel:TCLProLabel;
+sunriseLabel, sunsetLabel, sunriseValueLabel, sunsetValueLabel:TCLProPanel;
+
+locationIcon, weatherIcon, sunCycleIcon:TCLProImage;
+
+
+labelCrops, labelInvest:TCLProLabel;
+
+cropsBox:TCLHorzScrollBox;
+lytContainer2:TCLLayout;   //for crops 
+lytContainer3:TCLLayout;
+
+testImg:TCLProImage;
+
+transparentPanel, userMsgPanel, aiMsgPanel:TCLProPanel;
+messageCount:Integer;
+
+
+guideForm:TCLForm;
+
+cropTitleLabel:TCLProLabel;
+
+lblTitle, lblDesc, lblInvestTitle, lbl11, lbl12:TCLProLabel;
+suggestion1, suggestion2, suggestion3, suggestion4:TCLProButton;
+selectedCropsLayout:TCLLayout;
+cropTipLabel1, cropTipLabel2, cropTipLabel3:TCLProLabel;
+cropCard1, cropCard2, cropCard3:TCLProPanel;
+
+selectedSuggestion:Integer;
+
+introImage:TCLProImage;
+
+k:Integer;
+
+durationIcon, securityIcon, riskIcon, returnIcon:TCLProImage;
+
+crop:TCLProPanel;
+
+//sayfa arasi gezinme buton fonksiyonlari
+
+void Btn1Function;
+{
+  Clomosy.RunUnit('MainPage');
+  guideForm.clHide;
+}
+void Btn2Function;
+{
+  //Clomosy.RunUnit('GuidePage');
+  //guideForm.clHide;
+}
+void Btn3Function;
+{
+  Clomosy.RunUnit('PlannerPage');
+  guideForm.clHide;
+}
+void Btn4Function;
+{
+  Clomosy.RunUnit('ProfilePage');
+  guideForm.clHide;
+}
+
+//yatirim cardlarini eklemek icin yardimci fonksiyon
+
+void AddCropCard(cardName, imgURL, cropName, plantingTip, pestTip, waterTip, reasonText:string);
+var
+  card:TCLProPanel;
+  img:TCLProImage;
+  nameLabel, plantLabel, pestLabel, waterLabel, reasonLabel:TCLProLabel;
+{
+
+  
+  card = guideForm.AddNewProPanel(lytContainer, cardName);
+  card.Align = alNone;
+  card.Height = 260;
+  card.Width = 350;
+  
+  if(k==1){
+    card.Position.X = cropTitleLabel.Position.X;
+    card.Position.Y = cropTitleLabel.Position.Y+40;
+  }
+  else{
+    crop = guideForm.clFindComponent('crop'+IntToStr(k-1));
+    card.Position.X = crop.Position.X;
+    card.Position.Y = crop.Position.Y+300;
+  }
+  
+  
+  card.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  card.clProSettings.RoundWidth = 15;
+  card.clProSettings.RoundHeight = 15;
+  card.clProSettings.BorderColor = clAlphaColor.clHexToColor('#cccccc');
+  card.clProSettings.BorderWidth = 1;
+  card.SetclProSettings(card.clProSettings);
+  
+  img = guideForm.AddNewProImage(card, cardName + '_img');
+  img.Align = alTop;
+  //img.Position.X = card.Position.X+10;
+  //img.Position.Y = card.Position.Y+10;
+  img.Width = 350;
+  img.Height=90;
+  img.clProSettings.isRound=True;
+  img.clProSettings.RoundWidth = 15;
+  img.clProSettings.RoundHeight = 15;
+  img.Margins.Bottom = 10;
+  img.clProSettings.PictureSource = imgURL;
+  img.SetclProSettings(img.clProSettings);
+
+
+  nameLabel = guideForm.AddNewProLabel(card, cardName + '_name', cropName);
+  nameLabel.Align=AlTop;
+  nameLabel.Margins.Bottom=20;
+  //nameLabel.Position.X = card.Position.X+110;
+  //nameLabel.Position.Y = card.Position.Y+10;
+  nameLabel.clProSettings.FontSize = 18;
+  nameLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  nameLabel.clProSettings.FontHorzAlign=palCenter;
+  nameLabel.SetclProSettings(nameLabel.clProSettings);
+
+  plantLabel = guideForm.AddNewProLabel(card, cardName + '_plant', plantingTip);
+  plantLabel.Align=AlTop;
+  plantLabel.Margins.Left=20;
+  //plantLabel.Position.X = img.Position.X+100;
+  //plantLabel.Position.Y = img.Position.Y;
+  plantLabel.SetclProSettings(plantLabel.clProSettings);
+
+  pestLabel = guideForm.AddNewProLabel(card, cardName + '_pest', pestTip);
+  pestLabel.Align=AlTop;
+  pestLabel.Margins.Left=20;
+  //pestLabel.Position.X = nameLabel.Position.X;
+  //pestLabel.Position.Y = 60;
+  pestLabel.SetclProSettings(pestLabel.clProSettings);
+
+  waterLabel = guideForm.AddNewProLabel(card, cardName + '_water', waterTip);
+  waterLabel.Align=AlTop;
+  waterLabel.Margins.Left=20;
+  //waterLabel.Position.X = nameLabel.Position.X;
+  //waterLabel.Position.Y = 80;
+  waterLabel.SetclProSettings(waterLabel.clProSettings);
+
+  reasonLabel = guideForm.AddNewProLabel(card, cardName + '_reason', reasonText);
+  reasonLabel.Align=AlTop;
+  reasonLabel.Margins.Left=20;
+  //reasonLabel.Position.X = nameLabel.Position.X;
+  //reasonLabel.Position.Y = 105;
+  reasonLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#4CAF50');
+  reasonLabel.clProSettings.WordWrap = True;
+  //reasonLabel.Width = 170;
+  reasonLabel.Height=40;
+  reasonLabel.SetclProSettings(reasonLabel.clProSettings);
+  
+  Inc(k);
+}
+
+//yatirim onerilerini dinamik gostermek icin fonksiyon
+
+void UpdateSelectedSuggestion(selected: Integer);
+{
+  
+  for(k=1 to 10){
+  
+   if(guideForm.clFindComponent('crop'+IntToStr(k)) <> Nil){
+    crop = guideForm.clFindComponent('crop'+IntToStr(k));
+    
+    
+    crop.Visible = False;
+    crop.Free;             // Nesneyi bellekten temizle
+    crop = Nil;   
+    
+    }
+}
+
+
+  suggestion1.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion2.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion3.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion4.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  
+  lbl11 = guideForm.clFindComponent('lbl11');
+  lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lbl11.setClProSettings(lbl11.clProSettings);
+  
+  lbl12 = guideForm.clFindComponent('lbl12');
+  lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#777777');
+  lbl12.setClProSettings(lbl12.clProSettings);
+  
+  lbl11 = guideForm.clFindComponent('lbl21');
+  lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lbl11.setClProSettings(lbl11.clProSettings);
+  
+  lbl12 = guideForm.clFindComponent('lbl22');
+  lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#777777');
+  lbl12.setClProSettings(lbl12.clProSettings);
+  
+  lbl11 = guideForm.clFindComponent('lbl31');
+  lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lbl11.setClProSettings(lbl11.clProSettings);
+    
+  lbl12 = guideForm.clFindComponent('lbl32');
+  lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#777777');
+  lbl12.setClProSettings(lbl12.clProSettings);
+  
+  lbl11 = guideForm.clFindComponent('lbl41');
+  lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lbl11.setClProSettings(lbl11.clProSettings);
+  
+  lbl12 = guideForm.clFindComponent('lbl42');
+  lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#777777');
+  lbl12.setClProSettings(lbl12.clProSettings);
+
+ 
+  if(selected==1){
+    suggestion1.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50'); // green
+    suggestion1.clProSettings.BorderColor=clAlphaColor.clHexToColor('#f0f0f0'); // green
+    
+    lbl11 = guideForm.clFindComponent('lbl11');
+    lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    lbl11.setClProSettings(lbl11.clProSettings);
+    
+    lbl12 = guideForm.clFindComponent('lbl12');
+    lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    lbl12.setClProSettings(lbl12.clProSettings);
+    
+    cropTitleLabel.Text='Düşük Riskli Mahsuller';
+    
+    
+    k=1;
+  
+    AddCropCard(
+    'crop'+IntToStr(k),
+    'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/lettuce.jpg',
+    'Marul',
+    'Serin havalarda ekin.',
+    'Zararlılara karşı hassasiyeti düşüktür.',
+    'Orta derecede sulamaya ihtiyaç vardır.',
+    'Hızlı büyür, minimum kaynak gerektirir ve istikrarlı pazar talebine sahiptir.');
+    
+   AddCropCard(
+    'crop'+IntToStr(k),
+    'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/corn.jpg',
+    'Mısır',
+    ' İlkbaharda sıcak topraklara ekin.',
+    ' Zararlıya karşı orta-yüksek dayanıklıdır.',
+    ' Düzenli sulama gerektirir.',
+    ' Kolay yetişir, düşük arıza riskiyle güvenli mahsuldür.');
+  
+
+}   
+   else if(selected==2) {
+    suggestion2.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50');
+    
+    lbl11 = guideForm.clFindComponent('lbl21');
+    lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    lbl11.setClProSettings(lbl11.clProSettings);
+    
+    lbl12 = guideForm.clFindComponent('lbl22');
+    lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    lbl12.setClProSettings(lbl12.clProSettings);
+    
+    cropTitleLabel.Text='Yüksek Getirili Mahsuller';
+    
+    k=1;
+  
+    AddCropCard(
+    'crop'+IntToStr(k),
+    'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/pistachio.jpeg',
+    'Fıstık',
+    ' Sıcak ve kuru iklimleri sever.',
+    ' Zararlılara karşı dayanıklıdır.',
+    ' Seyrek ve derin sulama gerekir.',
+    ' Yüksek ihracat değeri ile kazanç potansiyeli yüksektir.');
+    
+    AddCropCard(
+    'crop'+IntToStr(k),
+    'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/safran.jpg',
+    'Safran',
+    ' Sonbaharda iyi drene edilmiş toprağa ekilir.',
+    ' Soğan çürümesine dikkat edilmelidir.',
+    ' Dikim sonrası az su ister.',
+    ' Az miktarla yüksek gelir elde edilebilir.');
+    
+}
+   else if(selected==3){
+    suggestion3.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50');
+    
+    lbl11 = guideForm.clFindComponent('lbl31');
+    lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    lbl11.setClProSettings(lbl11.clProSettings);
+    
+    lbl12 = guideForm.clFindComponent('lbl32');
+    lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    lbl12.setClProSettings(lbl12.clProSettings);
+    
+    cropTitleLabel.Text='Hızlı Yetişen Mahsuller';
+    
+    k=1;
+  
+    AddCropCard(
+    'crop'+IntToStr(k),
+    'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/roka.jpg',
+    'Roka',
+    ' Serin dönemlerde ekin.',
+    ' Genellikle zararlılara karşı dayanıklıdır.',
+    ' Sık ama hafif sulama yapın.',
+    ' Kısa sürede büyür ve çabuk hasat edilir.');
+    
+    AddCropCard(
+    'crop'+IntToStr(k),
+    'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/radish.jpg',
+    'Turp',
+    ' İlkbaharda doğrudan toprağa ekin.',
+    ' Zararlılardan nadiren etkilenir.',
+    ' Toprağı nemli tutun.',
+    ' 30 gün içinde hasat edilebilir, çok hızlıdır.');
+    
+}
+   else if(selected==4){
+    suggestion4.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50');
+    
+    lbl11 = guideForm.clFindComponent('lbl41');
+    lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    lbl11.setClProSettings(lbl11.clProSettings);
+    
+    lbl12 = guideForm.clFindComponent('lbl42');
+    lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    lbl12.setClProSettings(lbl12.clProSettings);
+    
+    cropTitleLabel.Text='Güvenli Mahsuller';
+    
+    k=1;
+  
+    AddCropCard(
+    'crop'+IntToStr(k),
+    'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/garlic.jpg',
+    'Sarımsak',
+    ' İlkbahar veya sonbaharda ekin.',
+    ' Doğal olarak zararlılara karşı dirençlidir.',
+    ' Çok fazla su istemez.',
+    ' Dayanıklı yapısıyla başarısızlık riski düşüktür.');
+    
+    AddCropCard(
+    'crop'+IntToStr(k),
+    'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/onion.jpg',
+    'Soğan',
+    ' Güneşli alanda zengin toprak tercih edilir.',
+    ' Zararlı tehdidi düşüktür.',
+    ' Haftalık sulama yeterlidir.',
+    ' Güvenilir verimi ile güvenli bir üründür.');
+    
+}    
+  
+  suggestion1.SetclProSettings(suggestion1.clProSettings);
+  suggestion2.SetclProSettings(suggestion2.clProSettings);
+  suggestion3.SetclProSettings(suggestion3.clProSettings);
+  suggestion4.SetclProSettings(suggestion4.clProSettings);
+}
+
+void onClicked1;
+{
+  selectedSuggestion=1;
+  UpdateSelectedSuggestion(1);
+  
+}
+
+void onClicked2;
+{
+  selectedSuggestion=2;
+  UpdateSelectedSuggestion(2);
+}
+
+void onClicked3;
+{
+  selectedSuggestion=3;
+  UpdateSelectedSuggestion(3);
+}
+
+void onClicked4;
+{
+  selectedSuggestion=4;
+  UpdateSelectedSuggestion(4);
+}
+
+//ana kod 
+
+{
+
+  guideForm=TCLForm.Create(Self);
+  
+  
+  guideForm.SetFormColor('#f0f0f0','',clGNone);
+  
+  mainScrollBox = guideForm.AddNewVertScrollBox(guideForm,'mainScrollBox');
+  mainScrollBox.Align = alMostTop;
+  mainScrollBox.Height = guideForm.clheight+30;
+  mainScrollBox.ShowScrollBars = True;
+ 
+  
+  lytContainer=guideForm.AddNewLayout(mainScrollBox, 'lytContainer');
+  lytContainer.Align = alMostTop;
+  lytContainer.Height = 1300; 
+  
+  introImage=guideForm.AddNewProImage(lytContainer, 'introImage');
+  introImage.clProSettings.PictureSource='https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/planner_page_image%20(1)%20(1).png';
+  introImage.setClProSettings(introImage.clProSettings);
+  introImage.Height=100;
+  introImage.Align=AlMostTop;
+  //introImage.Margins.Bottom=30;
+  
+  
+  lblTitle = guideForm.AddNewProLabel(lytContainer, 'lblTitle', 'Yatırımlar yap');
+  lblTitle.Align = alTop;
+  //lblTitle.Margins.Top = 20;
+  lblTitle.Margins.Left = 20;
+  lblTitle.Height = 30;
+  lblTitle.clProSettings.FontSize = 25;
+  lblTitle.clProSettings.TextSettings.Font.Style = [fsBold];
+  lblTitle.clProSettings.FontColor = clAlphaColor.clHexToColor('#4CAF50');
+  lblTitle.clProSettings.FontHorzAlign = palLeading;
+  lblTitle.SetclProSettings(lblTitle.clProSettings);
+  
+  
+  lblDesc = guideForm.AddNewProLabel(lytContainer, 'lblDesc', 'Kategori seçin ve mahsul önerileri alın');
+  lblDesc.Align = alTop;
+  lblDesc.Margins.Top = 5;
+  lblDesc.Margins.Left = 20;
+  lblDesc.Height = 30;
+  lblDesc.clProSettings.FontSize = 16;
+  lblDesc.clProSettings.FontColor = clAlphaColor.clHexToColor('#777777');
+  lblDesc.clProSettings.FontHorzAlign = palLeading;
+  lblDesc.SetclProSettings(lblDesc.clProSettings);
+  
+  
+  lblInvestTitle = guideForm.AddNewProLabel(lytContainer, 'lblInvestTitle', 'Yatırım Önerileri');
+  lblInvestTitle.Align = alTop;
+  //lblInvestTitle.Margins.Top = 20;
+  lblInvestTitle.Margins.Left = 20;
+  lblInvestTitle.Margins.Bottom = 320;
+  lblInvestTitle.Height = 40;
+  lblInvestTitle.clProSettings.FontSize = 20;
+  lblInvestTitle.clProSettings.TextSettings.Font.Style = [fsBold];
+  lblInvestTitle.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lblInvestTitle.clProSettings.FontHorzAlign = palLeading;
+  lblInvestTitle.Margins.Left = 20;
+  lblInvestTitle.SetclProSettings(lblInvestTitle.clProSettings);
+  
+  // Card 1 - Low Risk (Selected)
+  suggestion1 = guideForm.AddNewProButton(lytContainer, 'suggestion1', '');
+  suggestion1.Height = 150;
+  suggestion1.Width = 170;
+  suggestion1.Align = alNone;
+  suggestion1.Position.X=lblInvestTitle.Position.X;
+  suggestion1.Position.Y=lblInvestTitle.Position.Y+40;
+  
+  //suggestion1.Margins.Left = 20;
+  //suggestion1.Margins.Top = 10;
+  suggestion1.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion1.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion1.clProSettings.BorderWidth = 2;
+  suggestion1.clProSettings.RoundWidth = 20;
+  suggestion1.clProSettings.RoundHeight = 20;
+  
+  lbl11= guideForm.AddNewProLabel(suggestion1, 'lbl11', 'Düşük Risk');
+  lbl11.Align = alTop;
+  lbl11.Margins.Top=20;
+  lbl11.Margins.Left=20;
+  lbl11.clProSettings.FontSize = 20;
+  lbl11.clProSettings.TextSettings.Font.Style = [fsBold];
+  lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lbl11.setClProSettings(lbl11.clProSettings);
+  
+  lbl12=guideForm.AddNewProLabel(suggestion1, 'lbl12', 'İstikrarlı getiriler, daha güvenli ürünler');
+  lbl12.Align = alTop;
+  lbl12.Margins.Top=10;
+  lbl12.Margins.Left=20;
+  lbl12.Margins.Right=20;
+  lbl12.clProSettings.FontSize = 15;
+  lbl12.clProSettings.WordWrap=True;
+  lbl12.Height=80;
+  lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#777777');
+  lbl12.setClProSettings(lbl12.clProSettings);
+  
+  suggestion1.SetclProSettings(suggestion1.clProSettings);
+  guideForm.AddNewEvent(suggestion1, tbeOnClick, 'onClicked1'); 
+  
+  
+  // Card 2 - Low Risk 
+  suggestion2 = guideForm.AddNewProButton(lytContainer, 'suggestion2', '');
+  suggestion2.Height = 150;
+  suggestion2.Width = 170;
+  suggestion2.Align = alNone;
+  suggestion2.Position.X=suggestion1.Position.X+185;
+  suggestion2.Position.Y=lblInvestTitle.Position.Y+40;
+  suggestion2.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion2.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion2.clProSettings.BorderWidth = 2;
+  suggestion2.clProSettings.RoundWidth = 20;
+  suggestion2.clProSettings.RoundHeight = 20;
+  suggestion2.SetclProSettings(suggestion2.clProSettings);
+  
+  lbl11= guideForm.AddNewProLabel(suggestion2, 'lbl21', 'Yüksek Getiri');
+  lbl11.Align = alTop;
+  lbl11.Margins.Top=20;
+  lbl11.Margins.Left=20;
+  lbl11.clProSettings.FontSize = 20;
+  lbl11.clProSettings.TextSettings.Font.Style = [fsBold];
+  lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lbl11.setClProSettings(lbl11.clProSettings);
+  
+  lbl12=guideForm.AddNewProLabel(suggestion2, 'lbl22', 'Yüksek kazanç potansiyeline sahip mahsuller');
+  lbl12.Align = alTop;
+  lbl12.Margins.Top=10;
+  lbl12.Margins.Left=20;
+  lbl12.Margins.Right=20;
+  lbl12.clProSettings.FontSize = 15;
+  lbl12.clProSettings.WordWrap=True;
+  lbl12.Height=80;
+  lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#777777');
+  lbl12.setClProSettings(lbl12.clProSettings);
+  
+  guideForm.AddNewEvent(suggestion2, tbeOnClick, 'onClicked2'); 
+  
+  
+  // Card 3 - Low Risk 
+  suggestion3 = guideForm.AddNewProButton(lytContainer, 'suggestion3', '');
+  suggestion3.Height = 150;
+  suggestion3.Width = 170;
+  suggestion3.Align = alNone;
+  suggestion3.Position.X=suggestion1.Position.X;
+  suggestion3.Position.Y=suggestion1.Position.Y+170;
+  suggestion3.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion3.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion3.clProSettings.BorderWidth = 2;
+  suggestion3.clProSettings.RoundWidth = 20;
+  suggestion3.clProSettings.RoundHeight = 20;
+  suggestion3.SetclProSettings(suggestion3.clProSettings);
+  
+  lbl11= guideForm.AddNewProLabel(suggestion3, 'lbl31', 'Süre');
+  lbl11.Align = alTop;
+  lbl11.Margins.Top=20;
+  lbl11.Margins.Left=20;
+  lbl11.clProSettings.FontSize = 20;
+  lbl11.clProSettings.TextSettings.Font.Style = [fsBold];
+  lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lbl11.setClProSettings(lbl11.clProSettings);
+  
+  lbl12=guideForm.AddNewProLabel(suggestion3, 'lbl32', 'Mahsuller kısa sürede yetişerek hızlı dönüş sağlar');
+  lbl12.Align = alTop;
+  lbl12.Margins.Top=10;
+  lbl12.Margins.Left=20;
+  lbl12.Margins.Right=20;
+  lbl12.clProSettings.FontSize = 15;
+  lbl12.clProSettings.WordWrap=True;
+  lbl12.Height=80;
+  lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#777777');
+  lbl12.setClProSettings(lbl12.clProSettings);
+  
+  guideForm.AddNewEvent(suggestion3, tbeOnClick, 'onClicked3'); 
+  
+  // Card 4 - Low Risk 
+  
+  suggestion4 = guideForm.AddNewProButton(lytContainer, 'suggestion4', '');
+  suggestion4.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion4.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  suggestion4.clProSettings.BorderWidth = 2;
+  suggestion4.clProSettings.RoundWidth = 20;
+  suggestion4.clProSettings.RoundHeight = 20;
+  suggestion4.setClProSettings(suggestion4.ClProSettings);
+  suggestion4.Height = 150;
+  suggestion4.Width = 170;
+  suggestion4.Align = alNone;
+  suggestion4.Position.X=suggestion3.Position.X+185;
+  suggestion4.Position.Y=suggestion3.Position.Y;
+  
+  lbl11= guideForm.AddNewProLabel(suggestion4, 'lbl41', 'Güvenlik');
+  lbl11.Align = alTop;
+  lbl11.Margins.Top=20;
+  lbl11.Margins.Left=20;
+  lbl11.clProSettings.FontSize = 20;
+  lbl11.clProSettings.TextSettings.Font.Style = [fsBold];
+  lbl11.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lbl11.setClProSettings(lbl11.clProSettings);
+  
+  lbl12=guideForm.AddNewProLabel(suggestion4, 'lbl42', 'İklim değişikliklerine ve hastalıklara karşı daha dayanıklıdır.');
+  lbl12.Align = alTop;
+  lbl12.Margins.Top=10;
+  lbl12.Margins.Left=20;
+  lbl12.Margins.Right=20;
+  lbl12.clProSettings.FontSize = 15;
+  lbl12.clProSettings.WordWrap=True;
+  lbl12.Height=80;
+  lbl12.clProSettings.FontColor = clAlphaColor.clHexToColor('#777777');
+  lbl12.setClProSettings(lbl12.clProSettings); 
+  
+  
+  guideForm.AddNewEvent(suggestion4, tbeOnClick, 'onClicked4'); 
+  
+  
+  
+  cropTitleLabel = guideForm.AddNewProLabel(lytContainer, 'cropTitleLabel', 'Düşük Riskli Mahsuller');
+  cropTitleLabel.Align = alTop;
+  cropTitleLabel.Margins.Top = 20;
+  cropTitleLabel.Margins.Left = 20;
+  cropTitleLabel.Height = 30;
+  cropTitleLabel.clProSettings.FontSize = 22;
+  cropTitleLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  cropTitleLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  cropTitleLabel.SetclProSettings(cropTitleLabel.clProSettings);
+  
+  cropTitleLabel.Text='Düşük Riskli Mahsuller';
+  
+//sayfa ilk acildiginda default olarak ilk card secili olacaktir
+  
+  UpdateSelectedSuggestion(1);
+  
+  
+  
+  //bottom navigation panel
+  
+  bottomPanel=guideForm.AddNewProPanel(guideForm, 'bottomPanel');
+  bottomPanel.Align = alBottom;
+  bottomPanel.Width = 280;
+  bottomPanel.Height = 70;
+  bottomPanel.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  bottomPanel.clProSettings.IsTransparent = False; 
+  bottomPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFFFF'); 
+  //loginPanel.Opacity=0.5;
+  bottomPanel.SetclProSettings(bottomPanel.clProSettings);
+  
+  
+  //home button
+  
+  
+  btn1=guideForm.AddNewProButton(bottomPanel, 'btn1', '');
+  btn1.Align=AlLeft;
+  
+  
+  btn1.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/house-chimney.png';
+  btn1.SetclProSettings(btn1.clProSettings);
+  btn1.Width=30;
+  btn1.Height=30;
+  btn1.Margins.Left=50;
+  btn1.Margins.Right=60;
+  guideForm.addNewEvent(btn1, tbeOnClick, 'Btn1Function');
+  
+  
+    
+  btn2=guideForm.AddNewProButton(bottomPanel, 'btn2', '');
+  btn2.Align=AlLeft;
+  btn2.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/universal-access%20(1).png';
+  btn2.SetclProSettings(btn2.clProSettings);
+  btn2.Width=30;
+  btn2.Height=30;
+  btn2.Margins.Right=60;
+  guideForm.addNewEvent(btn2, tbeOnClick, 'Btn2Function');
+  
+  
+  
+  btn3=guideForm.AddNewProButton(bottomPanel, 'btn3', '');
+  btn3.Align=AlLeft;
+  btn3.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/plant-growth.png';
+  btn3.SetclProSettings(btn3.clProSettings);
+  btn3.Width=30;
+  btn3.Height=30;
+  btn3.Margins.Right=60;
+  guideForm.addNewEvent(btn3, tbeOnClick, 'Btn3Function');
+  
+  
+  
+  btn4=guideForm.AddNewProButton(bottomPanel, 'btn4', '');
+  btn4.Align=AlLeft;
+  btn4.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/user.png';
+  btn4.SetclProSettings(btn4.clProSettings);
+  btn4.Width=30;
+  btn4.Height=30;
+  btn4.Margins.Right=30;
+  guideForm.addNewEvent(btn4, tbeOnClick, 'Btn4Function');
+  
+  guideForm.Run;
+  
+  
+}
+
+
+
+
+
+

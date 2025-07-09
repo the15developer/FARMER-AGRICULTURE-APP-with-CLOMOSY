@@ -1,0 +1,455 @@
+var
+  database, password:String;
+  Query1: TclSqliteQuery;
+  Query2: TclSqliteQuery;
+  
+  loginForm:TCLForm;
+  logo:TCLProImage;
+  logo2:TCLProImage;
+  
+  loginPanel:TCLProPanel;
+  usernameEdit, passwordEdit:TCLProEdit;
+  userIcon: TClProImage;
+  passwordIcon: TClProImage;
+  loginButton:TCLProButton;
+  newUserButton:TCLProButton;
+  loginLabel:TCLProLabel;
+  
+  
+  newUserPanel: TCLProPanel;
+  nameEdit, emailEdit, newUsernameEdit, newPasswordEdit: TCLProEdit;
+  nameIcon, emailIcon, newUserIcon, newPasswordIcon: TCLProImage;
+  registerButton: TCLProButton;
+  newUserLabel:TCLProLabel;
+  backToLoginButton: TCLProButton;
+  
+  startTimer:TCLTimer;
+  startDuration:Integer;
+  
+  MainPage:TCLUnit;
+  
+  
+  username, name_surname:TCLProLabel;
+  
+  //login ve yeni kullanici fonksiyonlari
+  void BackToLoginFunction;
+  {
+    newUserPanel.Visible=False;
+    loginPanel.Visible=True;
+  }
+  
+  void NewUserFunction;
+  {
+  
+  loginPanel.Visible=False;
+  newUserPanel.Visible=True;
+    
+ }
+ 
+ void RegisterFunction;
+ {
+   try
+    Clomosy.DBSQLiteConnect(database, password);
+
+    // Kullanıcı adı kontrolü
+    Query2 = Clomosy.DBSQLiteQueryWith(
+      'SELECT * FROM users WHERE username = ' + QuotedStr(newUsernameEdit.Text)
+    );
+    Query2.OpenOrExecute;
+
+    if (Query2.Found) {
+      ShowMessage('Bu kullanıcı adı zaten kayıtlı.');
+      Query2.Free;
+      exit;
+    }
+    Query2.Free;
+
+    // Kayıt işlemi
+    Clomosy.DBSQLiteQuery.SQL.Text =
+      'INSERT INTO users (username, name, password, email) VALUES (' +
+      QuotedStr(newUsernameEdit.Text) + ', ' +
+      QuotedStr(nameEdit.Text) + ', ' +
+      QuotedStr(newPasswordEdit.Text) + ', ' +
+      QuotedStr(emailEdit.Text) + ')';
+
+    Clomosy.DBSQLiteQuery.OpenOrExecute;
+    
+
+    ShowMessage('Kayıt başarılı! Giriş ekranına yönlendiriliyorsunuz...');
+
+    // Giriş ekranına dön
+    BackToLoginFunction;
+
+  except
+    ShowMessage('Exception class: ' + LastExceptionClassName + ' Exception Message: ' + LastExceptionMessage);
+  }
+ }
+  
+  void LoginFunction;
+  {
+    try
+    Clomosy.DBSQLiteConnect(database, password);
+     
+   
+      
+    Query1 = Clomosy.DBSQLiteQueryWith('SELECT * FROM users WHERE username =' + QuotedStr(usernameEdit.Text) + ' AND password =' + QuotedStr(passwordEdit.Text));
+    
+    Query1.OpenOrExecute;
+      
+      
+    if(Query1.Found){
+      username.Text=usernameEdit.Text;
+      name_surname.Text=Query1.FieldByName('name').AsString;
+      
+      Clomosy.GlobalVariableString = usernameEdit.Text;
+      //ShowMessage('Giriş başarılı! Hoş geldiniz: '+ usernameEdit.Text);
+      Clomosy.RunUnit('MainPage');
+      
+    }
+    else {
+      ShowMessage('Hatalı kullanıcı adı veya şifre!');
+    }
+    
+    Query1.Free;
+      
+    except
+      ShowMessage('Exception class :' + LastExceptionClassName + 'Exception message:' + LastExceptionMessage);
+    }
+  }
+  
+  
+  //ana kod - giris resminden sonra calisacaktir
+  void Main;
+  {
+    
+    username=loginForm.addNewProLabel(loginForm, 'username', '');
+    name_surname=loginForm.addNewProLabel(loginForm, 'name_surname', '');
+    username.Visible=False;
+    name_surname.Visible=False;
+    
+    loginForm.SetFormBGImage('https://i.pinimg.com/736x/1d/85/11/1d8511b11ec30fb28ae1b248401b9b12.jpg');
+    
+    logo2=loginForm.AddNewProImage(loginForm, 'logo2');
+    logo2.Align=AlMostTop;
+    logo2.Width=150;
+    logo2.Height=30;
+    logo2.clProSettings.PictureSource='https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/logo2.png';
+    logo2.SetClProSettings(logo2.clProSettings);
+  
+  
+    //loginPanel ayarlari
+    loginPanel=loginForm.addNewProPanel(loginForm, 'loginPanel');
+    loginPanel.Align = alCenter;
+    loginPanel.Width = 280;
+    loginPanel.Height = 280;
+    //loginPanel.clProSettings.BorderColor = clAlphaColor.clHexToColor('#fabd2');
+    loginPanel.clProSettings.IsTransparent = False; 
+    
+    //loginPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFFFF'); 
+    //loginPanel.Opacity=0.5;
+    loginPanel.SetclProSettings(loginPanel.clProSettings);
+    
+    
+    loginLabel=loginForm.addNewProLabel(loginPanel, 'loginLabel', 'HOŞ GELDİNİZ !');
+    loginLabel.Align=AlTop;
+    loginLabel.Margins.Bottom=0;
+    loginLabel.Height = 45;
+    loginLabel.clProSettings.FontSize = 25;
+    loginLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+    loginLabel.clProSettings.FontHorzAlign = palCenter;
+    loginLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF');
+    loginLabel.SetclProSettings(loginLabel.clProSettings);
+    
+    
+    // Kullanıcı adı Edit ve ikonu
+    usernameEdit = loginForm.addNewProEdit(loginPanel, 'usernameEdit', 'Kullanıcı Adınız...');
+    usernameEdit.Align = alTop;
+    usernameEdit.Height = 45;
+    usernameEdit.Width = 250;
+    //usernameEdit.clProSettings.BorderColor = clAlphaColor.clHexToColor('#FFFFFF');
+    usernameEdit.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    usernameEdit.clProSettings.RoundHeight = 15;
+    usernameEdit.clProSettings.RoundWidth = 15;
+    //usernameEdit.clProSettings.BorderWidth = 1;
+    usernameEdit.clProSettings.FontSize = 14;
+    usernameEdit.clProSettings.FontVertAlign = palCenter;
+    usernameEdit.clProSettings.FontHorzAlign = palCenter;
+    usernameEdit.clProSettings.TextSettings.Font.Style = [fsBold];
+    //usernameEdit.clProSettings.IsTransparent = True;
+    usernameEdit.clProSettings.IsRound = True;
+    usernameEdit.SetclProSettings(usernameEdit.clProSettings);
+    usernameEdit.Opacity=0.5;
+    usernameEdit.Margins.Bottom=30;
+    
+    // Kullanıcı ikonu
+    
+    userIcon = loginForm.AddNewProImage(usernameEdit, 'userIcon');
+    userIcon.Align = alLeft;
+    userIcon.Width = 24;
+    userIcon.Margins.Left = 5;
+    userIcon.Margins.Top = 5;
+    userIcon.Margins.Bottom = 5;
+    loginForm.SetImage(userIcon, 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png'); // ← buraya kendi ikon bağlantını koy
+    
+    // Şifre Edit ve ikonu
+    passwordEdit = loginForm.addNewProEdit(loginPanel, 'passwordEdit', 'Şifreniz...');
+    passwordEdit.Align = alTop;
+    passwordEdit.Height = 45;
+    passwordEdit.Width = 250;
+    //passwordEdit.clProSettings.BorderColor = clAlphaColor.clHexToColor('#FFFFFF');
+    passwordEdit.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    passwordEdit.clProSettings.RoundHeight = 15;
+    passwordEdit.clProSettings.RoundWidth = 15;
+    //passwordEdit.clProSettings.BorderWidth = 1;
+    passwordEdit.clProSettings.FontSize = 14;
+    passwordEdit.clProSettings.FontVertAlign = palCenter;
+    passwordEdit.clProSettings.FontHorzAlign = palCenter;
+    passwordEdit.clProSettings.TextSettings.Font.Style = [fsBold];
+    //passwordEdit.clProSettings.IsTransparent = True;
+    passwordEdit.clProSettings.IsRound = True;
+    passwordEdit.Opacity=0.7;
+    passwordEdit.Password=True;
+    passwordEdit.SetclProSettings(passwordEdit.clProSettings);
+    
+    // Şifre ikonu
+    passwordIcon = loginForm.AddNewProImage(passwordEdit, 'passwordIcon');
+    passwordIcon.Align = alLeft;
+    passwordIcon.Width = 24;
+    passwordIcon.Margins.Left = 5;
+    passwordIcon.Margins.Top = 5;
+    passwordIcon.Margins.Bottom = 5;
+    loginForm.SetImage(passwordIcon, 'https://icons.veryicon.com/png/o/miscellaneous/remitting-country-linear-icon/password-148.png'); // ← buraya kendi ikon bağlantını koy
+
+
+    loginButton = loginForm.AddNewProButton(loginPanel, 'loginButton', 'Giriş Yap');
+    loginButton.Align = alTop;
+    loginButton.Height = 45;
+    loginButton.Width = 250;
+    loginButton.Margins.Top = 20;
+    
+    loginButton.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#4CAF50'); // yeşil renk
+    loginButton.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF');
+    loginButton.clProSettings.RoundHeight = 15;
+    loginButton.clProSettings.RoundWidth = 15;
+    loginButton.clProSettings.FontSize = 14;
+    loginButton.clProSettings.FontHorzAlign = palCenter;
+    loginButton.clProSettings.FontVertAlign = palCenter;
+    loginButton.clProSettings.TextSettings.Font.Style = [fsBold];
+    loginButton.clProSettings.IsFill = True;
+    loginButton.clProSettings.IsRound = True;
+    loginButton.SetclProSettings(loginButton.clProSettings);
+    
+    
+    loginForm.AddNewEvent(loginButton, tbeOnClick, 'LoginFunction');
+    
+    
+    newUserButton=loginForm.AddNewProButton(loginPanel, 'newUserButton', 'Hesabınız yok mu ?');
+    
+    newUserButton.Align=AlTop;
+    newUserButton.Margins.Top=10;
+    newUserButton.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF');
+    newUserButton.clProSettings.FontSize = 14;
+    newUserButton.clProSettings.FontHorzAlign = palLeading;
+    newUserButton.clProSettings.FontVertAlign = palCenter;
+    newUserButton.clProSettings.TextSettings.Font.Style = [fsBold];
+    newUserButton.SetclProSettings(newUserButton.clProSettings);
+    
+    loginForm.AddNewEvent(newUserButton, tbeOnClick, 'NewUserFunction');
+    
+    // Panel
+  newUserPanel = loginForm.AddNewProPanel(loginForm, 'newUserPanel');
+  newUserPanel.Align = alCenter;
+  newUserPanel.Width = 280;
+  newUserPanel.Height = 360;
+  newUserPanel.clProSettings.IsTransparent = False;
+  newUserPanel.SetclProSettings(newUserPanel.clProSettings);
+
+  // Hoş Geldiniz Label
+  newUserLabel = loginForm.addNewProLabel(newUserPanel, 'newUserLabel', 'Yeni Hesap Oluştur');
+  newUserLabel.Align = AlTop;
+  newUserLabel.Margins.Bottom = 0;
+  newUserLabel.Height = 45;
+  newUserLabel.clProSettings.FontSize = 20;
+  newUserLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  newUserLabel.clProSettings.FontHorzAlign = palCenter;
+  newUserLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF');
+  newUserLabel.SetclProSettings(newUserLabel.clProSettings);
+
+  // İsim Soyisim
+  nameEdit = loginForm.AddNewProEdit(newUserPanel, 'nameEdit', 'Adınız Soyadınız...');
+  nameEdit.Align = alTop;
+  nameEdit.Height = 45;
+  nameEdit.Width = 250;
+  nameEdit.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  nameEdit.clProSettings.RoundHeight = 15;
+  nameEdit.clProSettings.RoundWidth = 15;
+  nameEdit.clProSettings.FontSize = 14;
+  nameEdit.clProSettings.FontVertAlign = palCenter;
+  nameEdit.clProSettings.FontHorzAlign = palCenter;
+  nameEdit.clProSettings.TextSettings.Font.Style = [fsBold];
+  nameEdit.clProSettings.IsRound = True;
+  nameEdit.Opacity = 0.5;
+  nameEdit.Margins.Bottom = 10;
+  nameEdit.SetclProSettings(nameEdit.clProSettings);
+
+  nameIcon = loginForm.AddNewProImage(nameEdit, 'nameIcon');
+  nameIcon.Align = alLeft;
+  nameIcon.Width = 24;
+  nameIcon.Margins.Left = 5;
+  nameIcon.Margins.Top = 5;
+  nameIcon.Margins.Bottom = 5;
+  loginForm.SetImage(nameIcon, 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png');
+
+  // E-mail
+  emailEdit = loginForm.AddNewProEdit(newUserPanel, 'emailEdit', 'E-posta adresiniz...');
+  emailEdit.Align = alTop;
+  emailEdit.Height = 45;
+  emailEdit.Width = 250;
+  emailEdit.clProSettings = nameEdit.clProSettings;
+  emailEdit.Opacity = 0.5;
+  emailEdit.Margins.Bottom = 10;
+  emailEdit.SetclProSettings(emailEdit.clProSettings);
+
+  emailIcon = loginForm.AddNewProImage(emailEdit, 'emailIcon');
+  emailIcon.Align = alLeft;
+  emailIcon.Width = 24;
+  emailIcon.Margins.Left = 5;
+  emailIcon.Margins.Top = 5;
+  emailIcon.Margins.Bottom = 5;
+  loginForm.SetImage(emailIcon, 'https://icons.veryicon.com/png/o/miscellaneous/remitting-country-linear-icon/password-148.png');
+
+  // Kullanıcı Adı
+  newUsernameEdit = loginForm.AddNewProEdit(newUserPanel, 'newUsernameEdit', 'Kullanıcı Adınız...');
+  newUsernameEdit.Align = alTop;
+  newUsernameEdit.Height = 45;
+  newUsernameEdit.Width = 250;
+  newUsernameEdit.clProSettings = nameEdit.clProSettings;
+  newUsernameEdit.Opacity = 0.5;
+  newUsernameEdit.Margins.Bottom = 10;
+  newUsernameEdit.SetclProSettings(newUsernameEdit.clProSettings);
+
+  newUserIcon = loginForm.AddNewProImage(newUsernameEdit, 'newUserIcon');
+  newUserIcon.Align = alLeft;
+  newUserIcon.Width = 24;
+  newUserIcon.Margins.Left = 5;
+  newUserIcon.Margins.Top = 5;
+  newUserIcon.Margins.Bottom = 5;
+  loginForm.SetImage(newUserIcon, 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png');
+
+  // Şifre
+  newPasswordEdit = loginForm.AddNewProEdit(newUserPanel, 'newPasswordEdit', 'Şifreniz...');
+  newPasswordEdit.Align = alTop;
+  newPasswordEdit.Height = 45;
+  newPasswordEdit.Width = 250;
+  newPasswordEdit.clProSettings = nameEdit.clProSettings;
+  newPasswordEdit.Opacity = 0.5;
+  newPasswordEdit.Password=True;
+  newPasswordEdit.SetclProSettings(newPasswordEdit.clProSettings);
+
+  newPasswordIcon = loginForm.AddNewProImage(newPasswordEdit, 'newPasswordIcon');
+  newPasswordIcon.Align = alLeft;
+  newPasswordIcon.Width = 24;
+  newPasswordIcon.Margins.Left = 5;
+  newPasswordIcon.Margins.Top = 5;
+  newPasswordIcon.Margins.Bottom = 5;
+  loginForm.SetImage(newPasswordIcon, 'https://icons.veryicon.com/png/o/miscellaneous/remitting-country-linear-icon/password-148.png');
+
+  // Kayıt Butonu
+  registerButton = loginForm.AddNewProButton(newUserPanel, 'registerButton', 'Kayıt Ol');
+  registerButton.Align = alTop;
+  registerButton.Height = 45;
+  registerButton.Width = 250;
+  registerButton.Margins.Top = 20;
+  registerButton.clProSettings = loginButton.clProSettings;
+  registerButton.SetclProSettings(registerButton.clProSettings);
+  loginForm.AddNewEvent(registerButton, tbeOnClick, 'RegisterFunction');
+  
+  backToLoginButton = loginForm.AddNewProButton(newUserPanel, 'backToLoginButton', 'Hesabınız var mı?');
+  backToLoginButton.Align = alTop;
+  backToLoginButton.Margins.Top = 10;
+  backToLoginButton.clProSettings.FontColor = clAlphaColor.clHexToColor('#FFFFFF');
+  backToLoginButton.clProSettings.FontSize = 14;
+  backToLoginButton.clProSettings.FontHorzAlign = palLeading;
+  backToLoginButton.clProSettings.FontVertAlign = palCenter;
+  backToLoginButton.clProSettings.TextSettings.Font.Style = [fsBold];
+  backToLoginButton.SetclProSettings(backToLoginButton.clProSettings);
+
+  loginForm.AddNewEvent(backToLoginButton, tbeOnClick, 'BackToLoginFunction');
+  
+  newUserPanel.Visible=False;
+  }
+  
+  //giris resmi icin timer
+  
+  void startTimerFunction;
+  {
+    
+    if(startDuration==1){
+      startTimer.Enabled=False;
+      
+      if(logo <> Nil){
+      logo.Visible = False;
+      logo.Free;
+      logo=Nil;
+      }
+      Main;
+    }
+    Inc(startDuration);
+  }
+  
+  
+  //giris resmi kodu ve db ayarlamalari
+  
+  {
+    database=Clomosy.AppFilesPath+'ClomosyDatabase.db3';
+    password = '';
+    
+    loginForm=TCLForm.create(Self);
+    
+    //asagidaki kod her telefonda bir kere calisacak ya da 'if not exists ' kullanilacak
+    
+/*    try
+     Clomosy.DBSQLiteConnect(database, password);
+     Clomosy.DBSQLiteQuery.Sql.Text =
+      'CREATE TABLE users (' +
+      'user_id INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+      'username TEXT NOT NULL, ' +
+      'name TEXT NOT NULL, ' +
+      'password TEXT NOT NULL, ' +
+      'email TEXT NOT NULL' +
+      ')';
+      
+      Clomosy.DBSQLiteQuery.OpenOrExecute;
+      
+      ShowMessage('Kullanici tablosu basariyla olusturuldu!');
+      
+    except
+      ShowMessage('Exception class :' + LastExceptionClassName + 'Exception message:' + LastExceptionMessage);
+    }
+
+*/    
+    
+    
+    logo=loginForm.AddNewProImage(loginForm, 'logo')
+    logo.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/AgroTrack_logo.png';
+    logo.Align=alCenter;
+    logo.Width=350;
+    logo.Height=350;
+    logo.SetclProSettings(logo.clProSettings);
+    
+    loginForm.SetFormColor('#FFFFFF','',clGNone);
+    
+    startTimer=loginForm.AddNewTimer(loginForm, 'startTimer', 1000 );
+    loginForm.AddNewEvent(startTimer,tbeOnTimer,'startTimerFunction');
+    startDuration=0;
+    
+    startTimer.Enabled = True;
+    
+    loginForm.Run;
+    
+  }
+  
+  
+  
+  
+  

@@ -1,0 +1,307 @@
+var
+mainForm:TCLForm;
+mainScrollBox:TCLVertScrollBox;
+i:Integer;
+testImage:TCLProImage;
+lytContainer:TCLLayout; //main vertical container
+
+bottomPanel:TCLProPanel;
+
+newPasswordIcon:TCLProImage;
+
+btn1, btn2, btn3, btn4 :TCLProButton;
+btn1Label, btn2Label, btn3Label, btn4Label :TCLProLabel;
+
+homeGreenImage:TCLProImage;
+
+helloLabel, lbl:TCLProLabel;
+
+todayDate : TclDateTime;
+todayDateLabel:TCLProLabel;
+
+weatherPanel:TCLProPanel;
+
+locationLabel,temperatureLabel, humidityLabel, precLabel, pressLabel, windLabel:TCLProLabel;
+humidityValueLabel, precValueLabel, pressValueLabel, windValueLabel:TCLProLabel;
+sunriseLabel, sunsetLabel, sunriseValueLabel, sunsetValueLabel:TCLProPanel;
+
+locationIcon, weatherIcon, sunCycleIcon:TCLProImage;
+
+
+labelCrops, labelInvest:TCLProLabel;
+
+cropsBox:TCLHorzScrollBox;
+lytContainer2:TCLLayout;   //for crops 
+lytContainer3:TCLLayout;
+
+testImg:TCLProImage;
+
+transparentPanel, userMsgPanel, aiMsgPanel:TCLProPanel;
+messageCount:Integer;
+
+
+profileForm:TCLForm;
+
+introImage:TCLProImage;
+lblTitle:TCLProLabel;
+
+userCardPanel: TCLProPanel;
+nameLabel, emailLabel, usernameLabel: TCLProLabel;
+nameValue, emailValue, usernameValue: TCLProLabel;
+profileIcon: TCLProImage;
+
+userName:String;
+
+database, password:String;
+
+QryUser: TClSQLiteQuery;
+fullName, emailStr: String;
+
+
+
+//sayfa arasi gezinme buton fonksiyonlari
+
+void Btn1Function;
+{
+  Clomosy.RunUnit('MainPage');
+  profileForm.clHide;
+}
+void Btn2Function;
+{
+  Clomosy.RunUnit('GuidePage');
+  profileForm.clHide;
+}
+void Btn3Function;
+{
+  Clomosy.RunUnit('PlannerPage');
+  profileForm.clHide;
+}
+void Btn4Function;
+{
+  //Clomosy.RunUnit('ProfilePage');
+  //profileForm.clHide;
+}
+
+//ana kod
+
+{
+
+  profileForm=TCLForm.Create(Self);
+  
+  database=Clomosy.AppFilesPath+'ClomosyDatabase.db3';
+  password = '';
+  
+  
+  profileForm.SetFormColor('#f0f0f0','',clGNone);
+  
+  userName=Clomosy.GlobalVariableString;
+  
+  
+  mainScrollBox = profileForm.AddNewVertScrollBox(profileForm,'mainScrollBox');
+  mainScrollBox.Align = alMostTop;
+  mainScrollBox.Height = profileForm.clheight+30;
+  mainScrollBox.ShowScrollBars = True;
+  
+  
+  lytContainer=profileForm.AddNewLayout(mainScrollBox, 'lytContainer');
+  lytContainer.Align = alMostTop;
+  lytContainer.Height = 700; 
+  
+  introImage=profileForm.AddNewProImage(lytContainer, 'introImage');
+  introImage.clProSettings.PictureSource='https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/planner_page_image%20(1)%20(1).png';
+  introImage.setClProSettings(introImage.clProSettings);
+  introImage.Height=100;
+  introImage.Align=AlMostTop;
+  //introImage.Margins.Bottom=30;
+  
+  
+  lblTitle = profileForm.AddNewProLabel(lytContainer, 'lblTitle', 'Kullanıcı Bilgileri');
+  lblTitle.Align = alTop;
+  //lblTitle.Margins.Top = 20;
+  lblTitle.Margins.Left = 20;
+  lblTitle.Height = 30;
+  lblTitle.clProSettings.FontSize = 25;
+  lblTitle.clProSettings.TextSettings.Font.Style = [fsBold];
+  lblTitle.clProSettings.FontColor = clAlphaColor.clHexToColor('#4CAF50');
+  lblTitle.clProSettings.FontHorzAlign = palLeading;
+  lblTitle.SetclProSettings(lblTitle.clProSettings);
+  
+  
+  
+  userCardPanel = profileForm.AddNewProPanel(lytContainer, 'userCardPanel');
+  userCardPanel.Align = alTop;
+  userCardPanel.Margins.Top = 20;
+  userCardPanel.Margins.Left = 20;
+  userCardPanel.Margins.Right = 20;
+  userCardPanel.Height = 200;
+  userCardPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  userCardPanel.clProSettings.BorderColor = clAlphaColor.clHexToColor('#dddddd');
+  userCardPanel.clProSettings.BorderWidth = 1;
+  userCardPanel.clProSettings.IsRound = True;
+  userCardPanel.clProSettings.RoundHeight = 15;
+  userCardPanel.clProSettings.RoundWidth = 15;
+  userCardPanel.SetclProSettings(userCardPanel.clProSettings);
+  
+  
+  profileIcon = profileForm.AddNewProImage(userCardPanel, 'profileIcon');
+  profileIcon.Align = alNone;
+  profileIcon.Position.X=userCardPanel.Position.X;
+  profileIcon.Position.Y=userCardPanel.Position.Y-130;
+  profileIcon.Width = 80;
+  profileIcon.Height = 80;
+  profileIcon.Margins.Left = 15;
+  profileIcon.Margins.Top = 20;
+  profileIcon.clProSettings.PictureSource = 'https://cdn-icons-png.flaticon.com/512/8801/8801434.png'; // Replace with your image if needed
+  profileIcon.SetclProSettings(profileIcon.clProSettings);
+  
+  
+  nameLabel = profileForm.AddNewProLabel(userCardPanel, 'nameLabel', 'Ad Soyad:');
+  nameLabel.Align = alTop;
+  nameLabel.Margins.Left = 120;
+  nameLabel.Margins.Top = 20;
+  nameLabel.clProSettings.FontSize = 16;
+  nameLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#4CAF50');
+  nameLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  nameLabel.SetclProSettings(nameLabel.clProSettings);
+  
+  nameValue = profileForm.AddNewProLabel(userCardPanel, 'nameValue', ''); 
+  nameValue.Align = alTop;
+  nameValue.Margins.Left = 120;
+  nameValue.Margins.Top = 5;
+  nameValue.clProSettings.FontSize = 14;
+  nameValue.SetclProSettings(nameValue.clProSettings);
+  
+  emailLabel = profileForm.AddNewProLabel(userCardPanel, 'emailLabel', 'Email:');
+  emailLabel.Align = alTop;
+  emailLabel.Margins.Left = 120;
+  emailLabel.Margins.Top = 5;
+  emailLabel.clProSettings.FontSize = 16;
+  emailLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#4CAF50');
+  emailLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  emailLabel.SetclProSettings(emailLabel.clProSettings);
+  
+  emailValue = profileForm.AddNewProLabel(userCardPanel, 'emailValue', ''); 
+  emailValue.Align = alTop;
+  emailValue.Margins.Left = 120;
+  emailValue.Margins.Top = 5;
+  emailValue.clProSettings.FontSize = 14;
+  emailValue.SetclProSettings(emailValue.clProSettings);
+  
+  usernameLabel = profileForm.AddNewProLabel(userCardPanel, 'usernameLabel', 'Kullanıcı Adı:');
+  usernameLabel.Align = alTop;
+  usernameLabel.Margins.Left = 120;
+  usernameLabel.Margins.Top = 5;
+  usernameLabel.clProSettings.FontSize = 16;
+  usernameLabel.clProSettings.FontColor = clAlphaColor.clHexToColor('#4CAF50');
+  usernameLabel.clProSettings.TextSettings.Font.Style = [fsBold];
+  usernameLabel.SetclProSettings(usernameLabel.clProSettings);
+  
+  usernameValue = profileForm.AddNewProLabel(userCardPanel, 'usernameValue', userName); // ← Pull from DB
+  usernameValue.Align = alTop;
+  usernameValue.Margins.Left = 120;
+  usernameValue.Margins.Top = 5;
+  usernameValue.Margins.Bottom = 15;
+  usernameValue.clProSettings.FontSize = 14;
+  usernameValue.SetclProSettings(usernameValue.clProSettings);
+  
+  
+  try 
+  Clomosy.DBSQLiteConnect(database, password);  // Use correct DB name
+  QryUser = Clomosy.DBSQLiteQueryWith('SELECT * FROM users WHERE username = ' + QuotedStr(userName));
+  QryUser.OpenOrExecute;
+
+  if QryUser.Found
+  {
+    nameValue.Text = QryUser.FieldByName('name').AsString;
+    emailValue.Text = QryUser.FieldByName('email').AsString;
+  }
+  else 
+  {
+    nameValue.Text = 'Bilinmiyor';
+    emailValue.Text = 'Bilinmiyor';
+  }
+except
+  ShowMessage('Exception Class: ' + LastExceptionClassName + ' Message: ' + LastExceptionMessage);
+}
+
+
+  
+  //bottom navigation panel
+  
+  bottomPanel=profileForm.AddNewProPanel(profileForm, 'bottomPanel');
+  bottomPanel.Align = alBottom;
+  bottomPanel.Width = 280;
+  bottomPanel.Height = 70;
+  bottomPanel.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  bottomPanel.clProSettings.IsTransparent = False; 
+  bottomPanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFFFF'); 
+  //loginPanel.Opacity=0.5;
+  bottomPanel.SetclProSettings(bottomPanel.clProSettings);
+  
+  
+  //home button
+  
+  
+  btn1=profileForm.AddNewProButton(bottomPanel, 'btn1', '');
+  btn1.Align=AlLeft;
+  
+  
+  btn1.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/house-chimney.png';
+  btn1.SetclProSettings(btn1.clProSettings);
+  btn1.Width=30;
+  btn1.Height=30;
+  btn1.Margins.Left=50;
+  btn1.Margins.Right=60;
+  profileForm.addNewEvent(btn1, tbeOnClick, 'Btn1Function');
+  
+  //btn1Label=mainForm.addNewProLabel(mainForm, 'btn1Label', 'Home');
+  //btn1Label.Position.X=btn1.Position.X;
+  //btn1Label.Position.Y=btn1.Position.Y+30;
+  
+    
+  btn2=profileForm.AddNewProButton(bottomPanel, 'btn2', '');
+  btn2.Align=AlLeft;
+  btn2.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/universal-access.png';
+  btn2.SetclProSettings(btn2.clProSettings);
+  btn2.Width=30;
+  btn2.Height=30;
+  btn2.Margins.Right=60;
+  profileForm.addNewEvent(btn2, tbeOnClick, 'Btn2Function');
+  
+  //btn2Label=mainForm.addNewProLabel(mainForm, 'btn2Label', 'All Farms');
+  //btn2Label.Position.X=20;
+  //btn2Label.Position.Y=700;
+  
+  
+  btn3=profileForm.AddNewProButton(bottomPanel, 'btn3', '');
+  btn3.Align=AlLeft;
+  btn3.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/plant-growth.png';
+  btn3.SetclProSettings(btn3.clProSettings);
+  btn3.Width=30;
+  btn3.Height=30;
+  btn3.Margins.Right=60;
+  profileForm.addNewEvent(btn3, tbeOnClick, 'Btn3Function');
+  
+  //btn3Label=mainForm.addNewProLabel(bottomPanel, 'btn3Label', 'Statistics');
+  //btn3Label.Align=AlLeft;
+  
+  
+  btn4=profileForm.AddNewProButton(bottomPanel, 'btn4', '');
+  btn4.Align=AlLeft;
+  btn4.clProSettings.PictureSource = 'https://raw.githubusercontent.com/the15developer/FARMER-AGRICULTURE-APP-with-CLOMOSY/main/user%20(1).png';
+  btn4.SetclProSettings(btn4.clProSettings);
+  btn4.Width=30;
+  btn4.Height=30;
+  btn4.Margins.Right=30;
+  profileForm.addNewEvent(btn4, tbeOnClick, 'Btn4Function');
+  
+  profileForm.Run;
+  
+  
+}
+
+
+
+
+
+
