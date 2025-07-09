@@ -10,14 +10,15 @@ AgroTrack, çiftçilerin mahsul takibi yapmasını, hava durumunu kontrol etmesi
 
 ---
 
-##  1. Giriş (Login) ve Yeni Kullanıcı Sayfası
+## 1. Giriş (Login) ve Yeni Kullanıcı Sayfası
 
-Uygulama, kullanıcıyı ilk olarak AgroTrack’e ait logo ile karşılar. Ardından kullanıcı, modern tasarıma sahip giriş ekranına yönlendirilir. Eğer hesabı yoksa "Yeni Kullanıcı" seçeneği ile kayıt olabilir. Giriş ve kayıt ekranlarında kullanıcı adı/parola doğrulama gibi temel kontroller ivedilikle yapılır.
+Uygulama, kullanıcıyı ilk olarak AgroTrack’e ait logo ile karşılar. Ardından kullanıcı, modern tasarıma sahip giriş ekranına yönlendirilir. Eğer hesabı yoksa "Yeni Kullanıcı" seçeneği ile kayıt olabilir. Giriş ve kayıt ekranlarında kullanıcı adı/parola doğrulama gibi temel kontroller arka planda yapılır.
 
-** Ekran Görüntüsü:**
-![Intro Ekranı](introImage.jpeg)
-![Login ve Yeni Kullanıcı](login.jpeg)
-![Login ve Yeni Kullanıcı](newuser.jpeg)
+<p float="left">
+  <img src="introImage.jpeg" alt="Intro Ekranı" width="250"/>
+  <img src="login.jpeg" alt="Login" width="250"/>
+  <img src="newuser.jpeg" alt="Yeni Kullanıcı" width="250"/>
+</p>
 
 ---
 
@@ -25,12 +26,13 @@ Uygulama, kullanıcıyı ilk olarak AgroTrack’e ait logo ile karşılar. Ardı
 
 Ana sayfada, lokasyon bazlı hava durumu, her gün değişen tarım ipuçları ve kullanıcının ekili mahsulleri görsel kartlar şeklinde sunulur. Ayrıca, yatırım kategorisine göre önerilen mahsul kartları da burada yer alır.
 
-En dikkat çeken özellik ise Gemini API ile entegre edilen yapay zeka destekli sohbet panelidir. Kullanıcılar, metin veya görsel göndererek yapay zekadan destek alabilir.
+Gemini API ile entegre edilen yapay zeka destekli sohbet paneli sayesinde kullanıcılar, metin veya görsel göndererek yapay zekadan tarım danışmanlığı alabilir.
 
-** Ekran Görüntüsü:**
-![Ana Sayfa](mainPage.jpeg)
-![Ana Sayfa](mainPage.jpeg)
-![Ana Sayfa](mainPage.jpeg)
+<p float="left">
+  <img src="mainPage.jpeg" alt="Ana Sayfa 1" width="250"/>
+  <img src="mainPage.jpeg" alt="Ana Sayfa 2" width="250"/>
+  <img src="mainPage.jpeg" alt="Ana Sayfa 3" width="250"/>
+</p>
 
 ---
 
@@ -38,27 +40,29 @@ En dikkat çeken özellik ise Gemini API ile entegre edilen yapay zeka destekli 
 
 Kullanıcı, bu sayfada dört yatırım kategorisinden birini seçebilir: Düşük Risk, Yüksek Getiri, Güvenlik ve Hızlı Yetişen Mahsuller. Seçilen kategoriye göre ekranda önerilen mahsuller, görselli kart formatında detaylı bilgilerle birlikte gösterilir.
 
-**Ekran Görüntüsü:**
-![Yatırım Önerileri Sayfası](guide1.jpeg)
-![Yatırım Önerileri Sayfası](guide2.jpeg)
-![Yatırım Önerileri Sayfası](guide3.jpeg)
-![Yatırım Önerileri Sayfası](guide4.jpeg)
-![Yatırım Önerileri Sayfası](guide5.jpeg)
+<p float="left">
+  <img src="guide1.jpeg" alt="Yatırım 1" width="200"/>
+  <img src="guide2.jpeg" alt="Yatırım 2" width="200"/>
+  <img src="guide3.jpeg" alt="Yatırım 3" width="200"/>
+  <img src="guide4.jpeg" alt="Yatırım 4" width="200"/>
+  <img src="guide5.jpeg" alt="Yatırım 5" width="200"/>
+</p>
 
 ---
 
 ## 4. Ekili Mahsullerim Sayfası
 
-Bu sayfa, kullanıcının geçmişte ektiği mahsulleri listelediği alandır. Her mahsul için fotoğraf, ekim tarihi, kullanıcı notları gibi bilgiler yer alır. Yeni mahsul eklerken kullanıcı fotoğrafı:
-- Anında kamera ile çekebilir,
+Bu sayfa, kullanıcının geçmişte ektiği mahsulleri listelediği alandır. Her mahsul için fotoğraf, ekim tarihi, kullanıcı notları gibi bilgiler yer alır. Yeni mahsul eklerken kullanıcı:
+- Kamerayla anında fotoğraf çekebilir,
 - Telefona kayıtlı görseli seçebilir,
-- Veya bir görsel URL’si girebilir.
+- Bir görselin URL’sini girebilir.
 
-**Ekran Görüntüsü:**
-![Ekili Mahsullerim Sayfası](planner1.jpeg)
-![Ekili Mahsullerim Sayfası](planner2.jpeg)
-![Ekili Mahsullerim Sayfası](planner3.jpeg)
-![Ekili Mahsullerim Sayfası](planner4.jpeg)
+<p float="left">
+  <img src="planner1.jpeg" alt="Mahsul 1" width="250"/>
+  <img src="planner2.jpeg" alt="Mahsul 2" width="250"/>
+  <img src="planner3.jpeg" alt="Mahsul 3" width="250"/>
+  <img src="planner4.jpeg" alt="Mahsul 4" width="250"/>
+</p>
 
 ---
 
@@ -66,9 +70,9 @@ Bu sayfa, kullanıcının geçmişte ektiği mahsulleri listelediği alandır. H
 
 Kullanıcı adı, tam adı ve e-posta adresinin gösterildiği sade ve anlaşılır bir profil sayfasıdır. Karmaşık tasarım öğeleri içermeyen bu sayfa, kullanıcıya hızlı bilgi sunar.
 
-**Ekran Görüntüsü:**
-![Kullanıcı Sayfası](user.jpeg)
-
+<p float="left">
+  <img src="user.jpeg" alt="Kullanıcı Sayfası" width="250"/>
+</p>
 
 ---
 
@@ -90,12 +94,11 @@ Kullanıcı adı, tam adı ve e-posta adresinin gösterildiği sade ve anlaşıl
 
 ---
 
-## Teknolojiler, metotlar
+## Kullanılan Teknolojiler ve Metotlar
 
-- Clomosy ve TRObject programlama dili ile mobil uygulama geliştirme
-- SQLite veritabanı kullanımı
-- Yapay zeka API entegrasyonu
-- UI/UX tasarımı ve kullanıcı deneyimi düzenlemeleri
-- Sanal klavye yönetimi, görsel kart sistemleri ve timer tabanlı olay kontrolü
-
-
+- Clomosy ile mobil uygulama geliştirme
+- SQLite veritabanı bağlantısı
+- Gemini API entegrasyonu
+- Sanal klavye yönetimi (VirtualKeyboard)
+- Kart temelli görsel bilgi sunumu
+- Timer tabanlı olay kontrolü ve UI güncellemeleri
