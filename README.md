@@ -32,6 +32,9 @@ Gemini API ile entegre edilen yapay zeka destekli sohbet paneli sayesinde kullan
   <img src="mainPage.jpeg" alt="Ana Sayfa 1" width="250"/>
   <img src="mainPage2.jpeg" alt="Ana Sayfa 2" width="250"/>
   <img src="mainPage3.jpeg" alt="Ana Sayfa 3" width="250"/>
+  <img src="ai1.jpeg" alt="Ana Sayfa 1" width="250"/>
+  <img src="ai2.jpeg" alt="Ana Sayfa 2" width="250"/>
+  <img src="ai3.jpeg" alt="Ana Sayfa 3" width="250"/>
 </p>
 
 ---
