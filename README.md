@@ -1,6 +1,6 @@
 # AgroTrack – Tarım Takip ve Danışmanlık Mobil Uygulaması
 
-Bu proje, üniversite ikinci zorunlu yaz stajım kapsamında geliştirdiğim **üçüncü projedir** ve **8 gün içerisinde** tamamlanmıştır. Uygulamanın amacı, çiftçilerin günlük tarımsal faaliyetlerini dijital ortamda daha düzenli ve verimli bir şekilde yürütebilmelerine yardımcı olmaktır.
+AgroTrack, üniversite ikinci zorunlu yaz stajım kapsamında geliştirdiğim **üçüncü projedir** ve **8 gün içerisinde** tamamlanmıştır. Uygulamanın amacı, çiftçilerin günlük tarımsal faaliyetlerini dijital ortamda daha düzenli ve verimli bir şekilde yürütebilmelerine yardımcı olmaktır.
 
 ---
 
